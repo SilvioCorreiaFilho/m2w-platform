@@ -2,9 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { DM_Sans, Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-import { GlobalCanvas } from "@/components/canvas/GlobalCanvas";
-import { MiaScene } from "@/components/canvas/MiaScene";
 import { Navbar } from "@/components/Navbar";
+import { CanvasClient } from "./canvas-client";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -43,10 +42,7 @@ export const metadata: Metadata = {
     locale: "pt_BR",
     type: "website",
   },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  robots: { index: true, follow: true },
 };
 
 export const viewport: Viewport = {
@@ -66,16 +62,13 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="bg-bg-deep text-text-primary font-sans antialiased">
-        {/* WebGL background — fixed, behind all content */}
-        <GlobalCanvas>
-          <MiaScene />
-        </GlobalCanvas>
+        {/* WebGL background — client-only, skips SSR */}
+        <CanvasClient />
 
         <Providers>
           <Navbar />
           {children}
 
-          {/* Footer */}
           <footer className="border-t border-glass-border py-8 px-6">
             <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">

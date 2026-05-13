@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef } from "react";
-import type Lenis from "@studio-freight/lenis";
+import type Lenis from "lenis";
 import { createLenis, destroyLenis } from "@/lib/lenis";
 import { initGSAP } from "@/lib/gsap";
 

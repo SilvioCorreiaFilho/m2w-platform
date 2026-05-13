@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -25,11 +25,10 @@ function ParticleField() {
       positions[i3 + 1] = r * Math.sin(phi) * Math.sin(theta) * 0.6;
       positions[i3 + 2] = r * Math.cos(phi) - 2;
 
-      // Violet → fuchsia gradient
       const t = Math.random();
-      colors[i3] = 0.35 + t * 0.35;     // R
-      colors[i3 + 1] = 0.08 + t * 0.12; // G
-      colors[i3 + 2] = 0.7 + t * 0.3;   // B
+      colors[i3] = 0.35 + t * 0.35;
+      colors[i3 + 1] = 0.08 + t * 0.12;
+      colors[i3 + 2] = 0.7 + t * 0.3;
 
       sizes[i] = Math.random() * 0.035 + 0.005;
     }
@@ -37,9 +36,7 @@ function ParticleField() {
     return { positions, colors, sizes };
   }, []);
 
-  // Subtle mouse tracking
-  useMemo(() => {
-    if (typeof window === "undefined") return;
+  useEffect(() => {
     const onMove = (e: MouseEvent) => {
       mouseRef.current.x = (e.clientX / window.innerWidth - 0.5) * 0.4;
       mouseRef.current.y = -(e.clientY / window.innerHeight - 0.5) * 0.4;
@@ -51,9 +48,7 @@ function ParticleField() {
   useFrame((state) => {
     if (!meshRef.current) return;
     const t = state.clock.getElapsedTime();
-
-    meshRef.current.rotation.y =
-      t * 0.018 + mouseRef.current.x * 0.5;
+    meshRef.current.rotation.y = t * 0.018 + mouseRef.current.x * 0.5;
     meshRef.current.rotation.x =
       Math.sin(t * 0.008) * 0.12 + mouseRef.current.y * 0.3;
     meshRef.current.rotation.z = t * 0.006;
