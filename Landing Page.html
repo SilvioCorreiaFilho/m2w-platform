@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M2W AI Solutions — Avatar Digital de IA para TikTok Shop, Fanvue & B2B</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ── Tokens ─────────────────────────────────────── */
+:root {
+  --ink: #0A0A08;
+  --ink-warm: #121210;
+  --cream: #EDE8DC;
+  --muted: #7A7570;
+  --border: rgba(237,232,220,0.10);
+  --faint: rgba(237,232,220,0.05);
+  --grd: linear-gradient(135deg,#e879f9 0%,#a855f7 50%,#06b6d4 100%);
+  --p: #a855f7;
+  --p-dim: rgba(168,85,247,0.10);
+  --p-brd: rgba(168,85,247,0.30);
+}
+*,*::before,*::after { box-sizing: border-box; margin:0; padding:0; }
+html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+body {
+  background: var(--ink);
+  color: var(--cream);
+  font-family: 'Syne', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+body::after {
+  content:""; position:fixed; inset:0; z-index:9999; pointer-events:none;
+  opacity:0.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:160px; mix-blend-mode:overlay;
+}
+::-webkit-scrollbar { width:2px; }
+::-webkit-scrollbar-track { background:var(--ink); }
+::-webkit-scrollbar-thumb { background:var(--p); }
+
+/* ── Type helpers ───────────────────────────────── */
+.dp { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; }
+.mn { font-family:'Space Mono',monospace; }
+.lbl { font-family:'Space Mono',monospace; font-size:.6rem; letter-spacing:.3em; text-transform:uppercase; color:var(--muted); }
+.ch  { font-family:'Space Mono',monospace; font-size:.6rem; letter-spacing:.3em; text-transform:uppercase; color:var(--p); display:block; margin-bottom:.75rem; }
+.grd-t { background:var(--grd); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.rule { width:100%; height:1px; background:var(--border); }
+
+/* ── Layout ─────────────────────────────────────── */
+.wrap { max-width:1320px; margin:0 auto; padding:0 2rem; }
+
+/* ── Buttons ────────────────────────────────────── */
+.btn-p {
+  display:inline-flex; align-items:center; gap:.5rem;
+  background:var(--grd); color:#fff;
+  font-family:'Space Mono',monospace; font-size:.65rem;
+  letter-spacing:.2em; text-transform:uppercase;
+  padding:.875rem 1.75rem; border:none; cursor:pointer;
+  text-decoration:none; white-space:nowrap;
+  transition:opacity .2s, transform .2s;
+}
+.btn-p:hover { opacity:.82; transform:translateY(-1px); }
+.btn-g {
+  display:inline-flex; align-items:center; gap:.5rem;
+  background:transparent; color:var(--cream);
+  font-family:'Space Mono',monospace; font-size:.65rem;
+  letter-spacing:.2em; text-transform:uppercase;
+  padding:.875rem 1.75rem; border:1px solid var(--border);
+  cursor:pointer; text-decoration:none; white-space:nowrap;
+  transition:border-color .2s, color .2s;
+}
+.btn-g:hover { border-color:var(--p-brd); color:var(--p); }
+
+/* ── Nav ────────────────────────────────────────── */
+#nav {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  border-bottom:1px solid transparent;
+  transition:all .4s;
+}
+#nav.scrolled {
+  background:rgba(10,10,8,.92);
+  backdrop-filter:blur(14px);
+  border-bottom-color:var(--border);
+}
+.nav-i { display:flex; align-items:center; justify-content:space-between; height:64px; }
+.nav-logo img { height:34px; width:auto; }
+.nav-links { display:flex; align-items:center; gap:2.5rem; }
+.nav-lnk {
+  font-family:'Space Mono',monospace; font-size:.6rem;
+  letter-spacing:.2em; text-transform:uppercase;
+  color:var(--muted); text-decoration:none;
+  background:none; border:none; cursor:pointer;
+  transition:color .2s;
+}
+.nav-lnk:hover { color:var(--cream); }
+@media(max-width:768px){ .nav-links{display:none;} }
+
+/* ── Hero ───────────────────────────────────────── */
+#hero {
+  min-height:100svh; display:flex; flex-direction:column;
+  justify-content:center; padding:7rem 2rem 0;
+  position:relative; overflow:hidden;
+}
+#hero::before {
+  content:""; position:absolute; top:-15%; right:-5%;
+  width:65vw; height:65vw; max-width:780px; max-height:780px;
+  background:radial-gradient(circle,rgba(168,85,247,.10) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-grid { display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; }
+@media(max-width:900px){ .hero-grid{grid-template-columns:1fr;} .hero-right{display:none;} }
+
+.eyebrow { display:flex; align-items:center; gap:.85rem; margin-bottom:2rem; }
+.dot { width:6px; height:6px; border-radius:50%; background:var(--p); animation:pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.4;transform:scale(.7);} }
+
+/* Headline tabs */
+.hl-tabs { display:flex; gap:.5rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+.hl-tab {
+  font-family:'Space Mono',monospace; font-size:.55rem;
+  letter-spacing:.2em; text-transform:uppercase;
+  padding:.35rem .8rem; border:1px solid var(--border);
+  background:transparent; color:var(--muted); cursor:pointer;
+  transition:all .2s;
+}
+.hl-tab.on { border-color:var(--p-brd); color:var(--cream); background:var(--p-dim); }
+
+.headline {
+  font-family:'Cormorant Garamond',Georgia,serif; font-style:italic;
+  font-size:clamp(3rem,7vw,6.5rem); line-height:.9;
+  color:var(--cream); margin-bottom:1.5rem;
+}
+.hl-v { display:none; }
+.hl-v.on { display:block; }
+
+.hero-sub { font-size:.95rem; color:var(--muted); line-height:1.75; max-width:460px; margin-bottom:2.5rem; }
+.hero-ctas { display:flex; flex-wrap:wrap; gap:1rem; align-items:center; }
+.hero-micro { font-family:'Space Mono',monospace; font-size:.55rem; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin-top:.75rem; }
+
+/* Compare box */
+.compare {
+  display:flex; align-items:center; gap:1.5rem;
+  border:1px solid var(--border); padding:1.25rem 1.5rem;
+  margin-top:2rem; max-width:430px; background:var(--faint);
+}
+.cmp-val { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:2.25rem; line-height:1; }
+.cmp-vs { font-family:'Space Mono',monospace; font-size:.55rem; letter-spacing:.3em; text-transform:uppercase; color:var(--muted); flex-shrink:0; }
+
+/* Hero stats */
+.hero-stats { display:flex; flex-direction:column; gap:1.25rem; }
+.stat-c {
+  border:1px solid var(--border); padding:1.5rem; position:relative;
+}
+.stat-c::before {
+  content:""; position:absolute; top:0; left:0; width:2px; height:100%; background:var(--grd);
+}
+.stat-v {
+  font-family:'Cormorant Garamond',Georgia,serif; font-style:italic;
+  font-size:3.25rem; line-height:1;
+  background:var(--grd); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.stat-l { font-family:'Space Mono',monospace; font-size:.55rem; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin-top:.4rem; }
+
+/* Ticker */
+.ticker { border-top:1px solid var(--border); overflow:hidden; padding:.75rem 0; margin-top:4rem; }
+.ticker-track { display:flex; white-space:nowrap; animation:marquee 32s linear infinite; }
+@keyframes marquee { 0%{transform:translateX(0);} 100%{transform:translateX(-50%);} }
+.tk { font-family:'Space Mono',monospace; font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); padding:0 2rem; }
+.tk.dot { color:var(--p); }
+
+/* ── Sections ───────────────────────────────────── */
+.sec { padding:6rem 2rem; }
+.sec-hd { margin-bottom:3.5rem; }
+.sec-title {
+  font-family:'Cormorant Garamond',Georgia,serif; font-style:italic;
+  font-size:clamp(2.25rem,5vw,4rem); line-height:.9; color:var(--cream);
+  margin-top:.5rem;
+}
+
+/* ── Opening ────────────────────────────────────── */
+.open-g { display:grid; grid-template-columns:1fr 1fr; gap:5rem; align-items:start; }
+@media(max-width:768px){ .open-g{grid-template-columns:1fr; gap:3rem;} }
+.open-body { font-size:1rem; line-height:1.85; color:var(--muted); }
+.open-body p { margin-bottom:1.2rem; }
+.open-body strong { color:var(--cream); font-weight:600; }
+.open-highlight { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:1.5rem; background:var(--grd); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+.cost-box { border:1px solid var(--border); padding:2rem; }
+.cost-row { display:flex; justify-content:space-between; align-items:baseline; padding:1.1rem 0; border-bottom:1px solid var(--border); gap:1rem; }
+.cost-row:last-child { border-bottom:none; }
+.cost-lbl { font-family:'Space Mono',monospace; font-size:.6rem; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); }
+.cost-v { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:1.85rem; }
+.cost-v.old { color:var(--muted); text-decoration:line-through; }
+.eco-badge { background:var(--p-dim); border:1px solid var(--p-brd); color:var(--cream); font-family:'Space Mono',monospace; font-size:.65rem; letter-spacing:.15em; text-transform:uppercase; padding:.75rem 1rem; margin-top:1.5rem; text-align:center; }
+
+/* ── Pain ───────────────────────────────────────── */
+.pain-bg { background:var(--ink-warm); }
+.pain-g { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1px; background:var(--border); border:1px solid var(--border); }
+.pain-item { background:var(--ink-warm); padding:1.75rem; display:flex; gap:1rem; align-items:flex-start; }
+.pain-n { font-family:'Space Mono',monospace; font-size:.6rem; letter-spacing:.2em; color:var(--p); flex-shrink:0; margin-top:.2rem; }
+.pain-t { font-size:.875rem; line-height:1.65; color:var(--muted); }
+.pain-t strong { color:var(--cream); }
+
+/* ── Solution steps ─────────────────────────────── */
+.steps { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:2rem; margin-top:3rem; }
+.step { border:1px solid var(--border); padding:2rem; position:relative; }
+.step::before { content:""; position:absolute; top:0; left:0; width:100%; height:2px; background:var(--grd); }
+.step-n { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:3.5rem; line-height:1; color:var(--border); margin-bottom:.75rem; }
+.step-ttl { font-size:.95rem; font-weight:600; color:var(--cream); margin-bottom:.5rem; }
+.step-body { font-size:.82rem; line-height:1.65; color:var(--muted); }
+
+/* ── Benefits ───────────────────────────────────── */
+.ben-g { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1px; background:var(--border); border:1px solid var(--border); }
+.ben { background:var(--ink); padding:1.75rem; }
+.ben-bar { width:2px; height:1.5rem; background:var(--grd); margin-bottom:1rem; }
+.ben-ttl { font-weight:600; font-size:.875rem; color:var(--cream); margin-bottom:.4rem; }
+.ben-body { font-size:.78rem; line-height:1.65; color:var(--muted); }
+
+/* ── Proof ──────────────────────────────────────── */
+.proof-bg { background:var(--ink-warm); }
+.quotes { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1.5rem; margin-top:3rem; }
+.q-card { border:1px solid var(--border); padding:2rem; position:relative; }
+.q-card::before { content:""; position:absolute; top:0; left:0; width:2px; height:100%; background:var(--grd); }
+.q-text { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:1.05rem; line-height:1.65; color:var(--cream); margin-bottom:1rem; }
+.q-src { font-family:'Space Mono',monospace; font-size:.55rem; letter-spacing:.2em; text-transform:uppercase; color:var(--p); }
+.tech-tags { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:3rem; }
+.tag { font-family:'Space Mono',monospace; font-size:.6rem; letter-spacing:.15em; text-transform:uppercase; padding:.4rem .75rem; border:1px solid var(--p-brd); color:var(--p); background:var(--p-dim); }
+.ph-slot { height:90px; background:repeating-linear-gradient(-45deg,transparent,transparent 4px,rgba(237,232,220,.02) 4px,rgba(237,232,220,.02) 8px); display:flex; align-items:center; justify-content:center; border:1px dashed var(--border); }
+
+/* ── Pricing accordion ──────────────────────────── */
+.price-svc { border-bottom:1px solid var(--border); }
+.price-hd { display:flex; justify-content:space-between; align-items:center; padding:2rem 0; cursor:pointer; gap:1rem; }
+.price-hd:hover .p-ttl { opacity:.8; }
+.p-tag { font-family:'Space Mono',monospace; font-size:.55rem; letter-spacing:.2em; text-transform:uppercase; padding:.3rem .7rem; border:1px solid var(--p-brd); color:var(--p); background:var(--p-dim); margin-bottom:.6rem; display:inline-block; }
+.p-ttl { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:clamp(1.5rem,3vw,2.25rem); color:var(--cream); line-height:1; transition:opacity .2s; }
+.p-chev { font-family:'Space Mono',monospace; font-size:1.1rem; color:var(--muted); transition:transform .35s; flex-shrink:0; }
+.p-chev.on { transform:rotate(180deg); }
+.price-body { display:none; padding-bottom:2rem; }
+.price-body.on { display:block; }
+.tier-g { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:1.25rem; margin-bottom:1rem; }
+.tier { border:1px solid var(--border); padding:1.5rem; }
+.tier.hi { border-color:var(--p-brd); background:var(--p-dim); }
+.tier-n { font-family:'Space Mono',monospace; font-size:.55rem; letter-spacing:.25em; text-transform:uppercase; color:var(--muted); margin-bottom:.65rem; }
+.tier-p { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:2rem; line-height:1; color:var(--cream); }
+.tier-per { font-family:'Space Mono',monospace; font-size:.5rem; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); margin:.25rem 0 .75rem; }
+.tier-f { font-size:.78rem; color:var(--muted); line-height:1.7; }
+.anchor-note { font-family:'Space Mono',monospace; font-size:.6rem; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); padding:.85rem 1rem; border:1px solid var(--border); margin-top:.85rem; display:inline-block; }
+.anchor-note span { color:var(--cream); }
+
+/* ── Accordion (objections + FAQ) ───────────────── */
+.acc { border-top:1px solid var(--border); }
+.acc-item { border-bottom:1px solid var(--border); }
+.acc-q { display:flex; justify-content:space-between; align-items:center; padding:1.6rem 0; cursor:pointer; gap:1rem; }
+.acc-ql { font-size:.95rem; font-weight:600; color:var(--cream); }
+.acc-plus { font-family:'Space Mono',monospace; font-size:1.2rem; color:var(--p); flex-shrink:0; transition:transform .3s; }
+.acc-plus.on { transform:rotate(45deg); }
+.acc-a { display:none; padding-bottom:1.6rem; font-size:.875rem; line-height:1.85; color:var(--muted); max-width:680px; }
+.acc-a.on { display:block; }
+.acc-a strong { color:var(--cream); }
+
+/* ── Guarantee ──────────────────────────────────── */
+.guar { border:1px solid var(--p-brd); background:var(--p-dim); padding:3rem; display:grid; grid-template-columns:auto 1fr; gap:3rem; align-items:center; }
+@media(max-width:680px){ .guar{grid-template-columns:1fr;} }
+.guar-badge { width:110px; height:110px; border-radius:50%; border:2px solid var(--p-brd); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:.75rem; flex-shrink:0; }
+.guar-badge-t { font-family:'Space Mono',monospace; font-size:.48rem; letter-spacing:.12em; text-transform:uppercase; color:var(--p); line-height:1.65; }
+.guar-ttl { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:1.75rem; color:var(--cream); line-height:1.25; margin-bottom:1rem; }
+.guar-t { font-size:.875rem; color:var(--muted); line-height:1.85; }
+.guar-t strong { color:var(--cream); }
+
+/* ── Urgency ────────────────────────────────────── */
+.urg-bg { background:var(--ink-warm); }
+.urg-g { display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; }
+@media(max-width:768px){ .urg-g{grid-template-columns:1fr;} }
+.urg-big { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:clamp(5rem,16vw,12rem); line-height:.85; background:var(--grd); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.urg-body { font-size:.95rem; color:var(--muted); line-height:1.85; }
+.urg-body p { margin-top:1rem; }
+.urg-body strong { color:var(--cream); }
+
+/* ── CTA final ──────────────────────────────────── */
+#cta { padding:8rem 2rem; text-align:center; position:relative; overflow:hidden; }
+#cta::before { content:""; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:80vw; height:80vw; max-width:700px; max-height:700px; background:radial-gradient(circle,rgba(168,85,247,.09) 0%,transparent 70%); pointer-events:none; }
+.cta-ttl { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:clamp(2.75rem,7vw,5.5rem); color:var(--cream); line-height:.92; margin-bottom:1.5rem; }
+.cta-body { font-size:.9rem; color:var(--muted); max-width:540px; margin:0 auto 2.5rem; line-height:1.85; }
+.cta-micro { font-family:'Space Mono',monospace; font-size:.55rem; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin-top:1rem; }
+
+/* PS + footer */
+.ps-block { border-top:1px solid var(--border); padding:3rem 2rem; text-align:center; }
+.ps-t { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:1.05rem; color:var(--muted); max-width:580px; margin:0 auto 1rem; line-height:1.85; }
+.ps-t strong { color:var(--cream); }
+.ps-email { font-family:'Space Mono',monospace; font-size:.75rem; letter-spacing:.2em; text-transform:uppercase; color:var(--p); text-decoration:none; }
+.ps-email:hover { opacity:.7; }
+footer { border-top:1px solid var(--border); padding:1.75rem 2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; }
+.ft-copy { font-family:'Space Mono',monospace; font-size:.55rem; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); text-decoration:none; }
+.ft-copy:hover { color:var(--p); }
+
+/* ── Scroll reveal ──────────────────────────────── */
+.reveal { opacity:0; transform:translateY(22px); transition:opacity .65s ease, transform .65s ease; }
+.reveal.in { opacity:1; transform:translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══════════════════════════════════════════ -->
+<nav id="nav">
+  <div class="wrap nav-i">
+    <a href="#" class="nav-logo" aria-label="M2W Home">
+      <img src="logo.png" alt="M2W AI Solutions">
+    </a>
+    <div class="nav-links">
+      <a href="#solucao" class="nav-lnk">Solução</a>
+      <a href="#servicos" class="nav-lnk">Serviços</a>
+      <a href="#precos" class="nav-lnk">Preços</a>
+      <a href="#faq" class="nav-lnk">FAQ</a>
+    </div>
+    <a href="#cta" class="btn-p">Solicitar Proposta ↗</a>
+  </div>
+</nav>
+
+<!-- ══ HERO ═════════════════════════════════════════ -->
+<section id="hero">
+  <div class="wrap">
+    <!-- eyebrow -->
+    <div class="eyebrow">
+      <div class="dot"></div>
+      <span class="lbl">Issue Nº 001 · Influência IA · Ao Vivo</span>
+    </div>
+
+    <div class="hero-grid">
+      <!-- Left -->
+      <div>
+        <div class="hl-tabs">
+          <button class="hl-tab on" onclick="setHL(0)">A — Economia</button>
+          <button class="hl-tab"   onclick="setHL(1)">B — Velocidade</button>
+          <button class="hl-tab"   onclick="setHL(2)">C — Urgência</button>
+        </div>
+
+        <h1 class="headline">
+          <span class="hl-v on" id="hl0">
+            Substitua <span class="grd-t">R$20K</span> de Cachê por <span class="grd-t">R$2.490/mês</span> de Avatar de IA
+          </span>
+          <span class="hl-v" id="hl1">
+            Avatar Digital Ativo em <span class="grd-t">48h.</span> Conteúdo Todo Dia. <span class="grd-t">Sem Cachê.</span>
+          </span>
+          <span class="hl-v" id="hl2">
+            Enquanto Você Paga Cachê, Seus Concorrentes <span class="grd-t">Já Estão com IA</span>
+          </span>
+        </h1>
+
+        <p class="hero-sub">A M2W gerencia influencers digitais de IA para TikTok Shop, Fanvue e B2B — conteúdo que converte 24/7, a uma fração do custo de qualquer influencer humano.</p>
+
+        <div class="hero-ctas">
+          <a href="#cta" class="btn-p">Ver quanto você economizaria →</a>
+          <a href="#precos" class="btn-g">Ver Planos e Preços →</a>
+        </div>
+        <p class="hero-micro">Diagnóstico gratuito · Sem compromisso · Setup em 48h</p>
+
+        <div class="compare">
+          <div>
+            <div class="lbl" style="margin-bottom:.25rem;">Influencer humano · 30 posts</div>
+            <div class="cmp-val" style="color:var(--muted);text-decoration:line-through;">R$30.000</div>
+            <div class="lbl" style="margin-top:.4rem;font-size:.5rem;">sem garantia · sem exclusividade</div>
+          </div>
+          <div class="cmp-vs">vs</div>
+          <div>
+            <div class="lbl" style="margin-bottom:.25rem;">Avatar M2W · básico</div>
+            <div class="cmp-val grd-t">R$2.490</div>
+            <div class="lbl" style="margin-top:.4rem;font-size:.5rem;">ROI garantido · todo dia</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right -->
+      <div class="hero-right">
+        <div class="hero-stats">
+          <div class="stat-c">
+            <div class="stat-v">90%</div>
+            <div class="stat-l">Economia vs. influencer humano</div>
+          </div>
+          <div class="stat-c">
+            <div class="stat-v">48h</div>
+            <div class="stat-l">Setup básico após aprovação</div>
+          </div>
+          <div class="stat-c">
+            <div class="stat-v">450%</div>
+            <div class="stat-l">Crescimento do mercado YoY</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ticker -->
+    <div class="ticker">
+      <div class="ticker-track">
+        <span class="tk">TikTok Shop</span><span class="tk dot">·</span>
+        <span class="tk">Fanvue</span><span class="tk dot">·</span>
+        <span class="tk">Automação B2B</span><span class="tk dot">·</span>
+        <span class="tk">LTX-2.3</span><span class="tk dot">·</span>
+        <span class="tk">Higgsfield</span><span class="tk dot">·</span>
+        <span class="tk">ComfyUI</span><span class="tk dot">·</span>
+        <span class="tk">24/7</span><span class="tk dot">·</span>
+        <span class="tk">LGPD Compliant</span><span class="tk dot">·</span>
+        <span class="tk">TikTok Shop</span><span class="tk dot">·</span>
+        <span class="tk">Fanvue</span><span class="tk dot">·</span>
+        <span class="tk">Automação B2B</span><span class="tk dot">·</span>
+        <span class="tk">LTX-2.3</span><span class="tk dot">·</span>
+        <span class="tk">Higgsfield</span><span class="tk dot">·</span>
+        <span class="tk">ComfyUI</span><span class="tk dot">·</span>
+        <span class="tk">24/7</span><span class="tk dot">·</span>
+        <span class="tk">LGPD Compliant</span><span class="tk dot">·</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ OPENING / VALUE PROP ══════════════════════════ -->
+<section class="sec" id="solucao">
+  <div class="wrap">
+    <div class="sec-hd reveal">
+      <span class="ch">01 — Proposta de Valor</span>
+      <h2 class="sec-title">O mesmo resultado,<br><span class="grd-t">a fração do custo.</span></h2>
+    </div>
+    <div class="open-g">
+      <div class="open-body reveal">
+        <p>Um micro-influencer no TikTok cobra entre <strong>R$1.000 e R$8.500 por post</strong>.</p>
+        <p>Para 30 posts por mês, você está falando de <strong>R$30.000 a R$255.000</strong> — antes de qualquer garantia de resultado, antes de qualquer exclusividade, antes de saber se ele vai aparecer no dia da live.</p>
+        <p>A M2W faz o mesmo por <span class="open-highlight">R$2.490 por mês.</span></p>
+        <p>Não com um criador humano. Com um <strong>avatar digital de IA</strong> — publicando todos os dias, em qualquer horário, sem cancelamento de última hora.</p>
+        <p>E se precisar de mais: a M2W também constrói a <strong>infraestrutura digital</strong> — plataformas, pipelines e sites com IA generativa integrada de verdade.</p>
+      </div>
+      <div class="reveal">
+        <div class="cost-box">
+          <div class="lbl" style="margin-bottom:1.25rem;">Comparativo · 30 posts/mês</div>
+          <div class="cost-row">
+            <div class="cost-lbl">Micro-influencer humano</div>
+            <div class="cost-v old">R$30–255K</div>
+          </div>
+          <div class="cost-row">
+            <div class="cost-lbl">Avatar M2W — Básico</div>
+            <div class="cost-v grd-t">R$2.490</div>
+          </div>
+          <div class="cost-row">
+            <div class="cost-lbl">Garantia de resultado</div>
+            <div class="mn" style="font-size:.7rem;color:var(--p);">SIM ✓</div>
+          </div>
+          <div class="cost-row">
+            <div class="cost-lbl">Avatar exclusivo possível</div>
+            <div class="mn" style="font-size:.7rem;color:var(--p);">SIM ✓</div>
+          </div>
+          <div class="cost-row">
+            <div class="cost-lbl">Cancela de última hora</div>
+            <div class="mn" style="font-size:.7rem;color:var(--muted);">NUNCA ✗</div>
+          </div>
+          <div class="eco-badge">Economia média: <strong style="color:var(--cream);">90%+</strong> vs. influencer humano</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap"><div class="rule"></div></div>
+
+<!-- ══ PAIN POINTS ═══════════════════════════════════ -->
+<section class="sec pain-bg" id="dores">
+  <div class="wrap">
+    <div class="sec-hd reveal">
+      <span class="ch">02 — Identificação da Dor</span>
+      <h2 class="sec-title">Você já fez as contas?</h2>
+    </div>
+    <div class="pain-g">
+      <div class="pain-item reveal">
+        <span class="pain-n">01</span>
+        <p class="pain-t"><strong>Cachê pago, briefing aprovado</strong> — e o conteúdo chega quando o criador "tiver tempo"</p>
+      </div>
+      <div class="pain-item reveal">
+        <span class="pain-n">02</span>
+        <p class="pain-t"><strong>Live cancelada de última hora</strong> porque o influencer fechou com outro cliente</p>
+      </div>
+      <div class="pain-item reveal">
+        <span class="pain-n">03</span>
+        <p class="pain-t"><strong>TikTok Shop sem voz ativa</strong> enquanto concorrentes dominam o feed com posts diários</p>
+      </div>
+      <div class="pain-item reveal">
+        <span class="pain-n">04</span>
+        <p class="pain-t"><strong>Agência entregando 8 posts/mês</strong> e chamando de "estratégia"</p>
+      </div>
+      <div class="pain-item reveal">
+        <span class="pain-n">05</span>
+        <p class="pain-t"><strong>Querendo escalar para 3 plataformas</strong>, mas o orçamento só cobre uma</p>
+      </div>
+      <div class="pain-item reveal">
+        <span class="pain-n">06</span>
+        <p class="pain-t"><strong>Dev para integrar IA no pipeline</strong> que ainda está "em desenvolvimento"</p>
+      </div>
+    </div>
+    <p class="reveal" style="margin-top:2rem;font-size:.9rem;color:var(--muted);line-height:1.85;">Cada um desses cenários tem um custo direto, um custo de oportunidade e um custo de energia. <strong style="color:var(--cream);">A M2W foi construída para acabar com todos eles.</strong></p>
+  </div>
+</section>
+
+<!-- ══ SOLUTION ══════════════════════════════════════ -->
+<section class="sec" id="como-funciona">
+  <div class="wrap">
+    <div class="sec-hd reveal">
+      <span class="ch">03 — Como Funciona</span>
+      <h2 class="sec-title">A M2W gerencia <span class="grd-t">tudo.</span></h2>
+    </div>
+    <p class="reveal" style="color:var(--muted);font-size:.95rem;max-width:520px;line-height:1.85;">O mercado de criação de conteúdo com IA cresceu 450% em 12 meses. A M2W capturou isso num serviço completo — do briefing ao asset publicado.</p>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-n">01</div>
+        <div class="step-ttl">Escolha ou crie seu avatar</div>
+        <div class="step-body">Avatares com persona, voz e estética definidas. Setup em menos de 48h, ou identidade 100% exclusiva — nunca licenciada para concorrentes.</div>
+      </div>
+      <div class="step reveal">
+        <div class="step-n">02</div>
+        <div class="step-ttl">A M2W gerencia tudo</div>
+        <div class="step-body">Do briefing ao asset publicado: geração de conteúdo, scripts A/B testados, programação, analytics. Você define os objetivos; a gente executa.</div>
+      </div>
+      <div class="step reveal">
+        <div class="step-n">03</div>
+        <div class="step-ttl">Volume sem custo proporcional</div>
+        <div class="step-body">De 10 para 100 posts por mês não significa contratar mais ninguém. O pipeline escala. O custo, não.</div>
+      </div>
+      <div class="step reveal">
+        <div class="step-n">04</div>
+        <div class="step-ttl">Full-stack quando precisar</div>
+        <div class="step-body">Plataforma, landing page ou pipeline customizado com IA? A M2W constrói — com a mesma stack que roda os nossos avatares.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap"><div class="rule"></div></div>
+
+<!-- ══ BENEFITS ══════════════════════════════════════ -->
+<section class="sec" id="beneficios">
+  <div class="wrap">
+    <div class="sec-hd reveal">
+      <span class="ch">04 — Benefícios</span>
+      <h2 class="sec-title">O que você <span class="grd-t">ganha.</span></h2>
+    </div>
+    <div class="ben-g">
+      <div class="ben reveal"><div class="ben-bar"></div><div class="ben-ttl">Custo 90% menor</div><div class="ben-body">Que influencer humano equivalente — sem abrir mão de presença diária</div></div>
+      <div class="ben reveal"><div class="ben-bar"></div><div class="ben-ttl">Avatar exclusivo possível</div><div class="ben-body">Persona criada só para sua marca, nunca disponível para a concorrência</div></div>
+      <div class="ben reveal"><div class="ben-bar"></div><div class="ben-ttl">Conteúdo publicado todo dia</div><div class="ben-body">Sem agenda humana, sem feriado, sem dia ruim</div></div>
+      <div class="ben reveal"><div class="ben-bar"></div><div class="ben-ttl">Setup básico em menos de 48h</div><div class="ben-body">Da aprovação ao primeiro vídeo publicado</div></div>
+      <div class="ben reveal"><div class="ben-bar"></div><div class="ben-ttl">Scripts otimizados automaticamente</div><div class="ben-body">A/B testing contínuo sem custo extra</div></div>
+      <div class="ben reveal"><div class="ben-bar"></div><div class="ben-ttl">Conformidade com LGPD</div><div class="ben-body">Dados tratados localmente, sem risco regulatório</div></div>
+      <div class="ben reveal"><div class="ben-bar"></div><div class="ben-ttl">Escalável sob demanda</div><div class="ben-body">Volume 10× não significa custo 10×</div></div>
+      <div class="ben reveal"><div class="ben-bar"></div><div class="ben-ttl">Dev full-stack quando precisar</div><div class="ben-body">Não apenas conteúdo, mas a infraestrutura que suporta o crescimento</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SOCIAL PROOF ══════════════════════════════════ -->
+<section class="sec proof-bg" id="prova">
+  <div class="wrap">
+    <div class="sec-hd reveal">
+      <span class="ch">05 — Prova de Mercado</span>
+      <h2 class="sec-title">O mercado está <span class="grd-t">provando o modelo.</span></h2>
+    </div>
+    <div class="quotes">
+      <div class="q-card reveal">
+        <p class="q-text">"O Fanvue atingiu US$100 milhões de receita anual em 2026, com crescimento de 450% em 12 meses. AI creators respondem por 15% de toda a receita da plataforma."</p>
+        <p class="q-src">VentureBeat · Janeiro 2026</p>
+      </div>
+      <div class="q-card reveal">
+        <p class="q-text">"Creators de IA individuais geram mais de US$20.000 por mês na plataforma."</p>
+        <p class="q-src">Fanvue / Sacra Research · 2026</p>
+      </div>
+      <div class="q-card reveal">
+        <p class="q-text">"O mercado de marketing de influência cresceu 40% ano a ano no Brasil."</p>
+        <p class="q-src">Influencer Marketing Hub · 2026</p>
+      </div>
+    </div>
+    <div class="reveal">
+      <p class="lbl" style="margin:3rem 0 1rem;">Stack Técnica Certificada</p>
+      <div class="tech-tags">
+        <span class="tag">LTX-2.3</span>
+        <span class="tag">Higgsfield</span>
+        <span class="tag">ComfyUI</span>
+        <span class="tag">Next.js 14</span>
+        <span class="tag">TypeScript</span>
+        <span class="tag">LGPD Compliant</span>
+      </div>
+    </div>
+    <div class="reveal" style="margin-top:3rem;border:1px solid var(--border);padding:2rem;">
+      <p class="lbl" style="margin-bottom:1.5rem;">Depoimentos de Clientes</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.25rem;">
+        <div class="ph-slot"><span class="lbl" style="text-align:center;line-height:1.8;">depoimento 01<br>marca · resultado mensurável</span></div>
+        <div class="ph-slot"><span class="lbl" style="text-align:center;line-height:1.8;">depoimento 02<br>velocidade de setup</span></div>
+        <div class="ph-slot"><span class="lbl" style="text-align:center;line-height:1.8;">depoimento 03<br>resultado tiktok shop</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PRICING ═══════════════════════════════════════ -->
+<section class="sec" id="precos">
+  <div class="wrap">
+    <div class="sec-hd reveal">
+      <span class="ch">06 — Oferta</span>
+      <h2 class="sec-title">Planos e <span class="grd-t">Preços.</span></h2>
+    </div>
+
+    <!-- TikTok -->
+    <div class="price-svc reveal">
+      <div class="price-hd" onclick="toggleP(this)">
+        <div><span class="p-tag">TikTok Shop &amp; Live Commerce</span><div class="p-ttl">Live Commerce</div></div>
+        <div class="p-chev">↓</div>
+      </div>
+      <div class="price-body">
+        <div class="tier-g">
+          <div class="tier"><div class="tier-n">Básico</div><div class="tier-p">R$2.490</div><div class="tier-per">/mês</div><div class="tier-f">30 vídeos · 4 lives<br>Avatar do portfólio</div></div>
+          <div class="tier hi"><div class="tier-n">Padrão ★</div><div class="tier-p grd-t">R$4.990</div><div class="tier-per">/mês</div><div class="tier-f">60 vídeos · 12 lives<br>Avatar exclusivo</div></div>
+          <div class="tier"><div class="tier-n">Premium</div><div class="tier-p">R$9.990</div><div class="tier-per">/mês</div><div class="tier-f">Ilimitado · Gestão dedicada<br>Analytics avançado</div></div>
+        </div>
+        <div class="anchor-note">← Micro-influencer humano equivalente: <span>R$30.000–R$80.000/mês</span></div>
+      </div>
+    </div>
+
+    <!-- Fanvue -->
+    <div class="price-svc reveal">
+      <div class="price-hd" onclick="toggleP(this)">
+        <div><span class="p-tag">Fanvue &amp; Conteúdo Premium</span><div class="p-ttl">Conteúdo Premium</div></div>
+        <div class="p-chev">↓</div>
+      </div>
+      <div class="price-body">
+        <div class="tier-g">
+          <div class="tier"><div class="tier-n">Básico</div><div class="tier-p">R$1.990</div><div class="tier-per">/mês</div><div class="tier-f">Canal de assinatura<br>Conteúdo diário automatizado</div></div>
+          <div class="tier hi"><div class="tier-n">Padrão ★</div><div class="tier-p grd-t">R$3.990</div><div class="tier-per">/mês</div><div class="tier-f">DM com IA conversacional<br>Analytics de retenção</div></div>
+          <div class="tier"><div class="tier-n">Premium</div><div class="tier-p">R$7.990</div><div class="tier-per">/mês</div><div class="tier-f">Gestão completa<br>Analytics em tempo real</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B2B -->
+    <div class="price-svc reveal">
+      <div class="price-hd" onclick="toggleP(this)">
+        <div><span class="p-tag">Automação Comercial B2B</span><div class="p-ttl">Automação B2B</div></div>
+        <div class="p-chev">↓</div>
+      </div>
+      <div class="price-body">
+        <div class="tier-g">
+          <div class="tier"><div class="tier-n">Básico</div><div class="tier-p">R$3.490</div><div class="tier-per">/mês</div><div class="tier-f">1 persona · 30 assets<br>Pipeline completo</div></div>
+          <div class="tier hi"><div class="tier-n">Padrão ★</div><div class="tier-p grd-t">R$6.990</div><div class="tier-per">/mês</div><div class="tier-f">3 personas · 100 assets<br>Multi-plataforma</div></div>
+          <div class="tier"><div class="tier-n">Premium</div><div class="tier-p">R$12.990</div><div class="tier-per">/mês</div><div class="tier-f">Ilimitado · SLA<br>Whitelabel</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dev -->
+    <div class="price-svc reveal">
+      <div class="price-hd" onclick="toggleP(this)">
+        <div><span class="p-tag">Desenvolvimento Full-Stack + IA</span><div class="p-ttl">Dev Full-Stack</div></div>
+        <div class="p-chev">↓</div>
+      </div>
+      <div class="price-body">
+        <div class="tier-g">
+          <div class="tier"><div class="tier-n">Landing + Pipeline</div><div class="tier-p">R$4.900</div><div class="tier-per">entrega única</div><div class="tier-f">Next.js · TypeScript<br>ComfyUI integrado</div></div>
+          <div class="tier hi"><div class="tier-n">Plataforma Completa ★</div><div class="tier-p grd-t">R$9.900+</div><div class="tier-per">por escopo</div><div class="tier-f">Conceito ao deploy<br>IA generativa real</div></div>
+          <div class="tier"><div class="tier-n">Manutenção</div><div class="tier-p">R$1.490</div><div class="tier-per">/mês</div><div class="tier-f">Suporte contínuo<br>Atualizações e monitoramento</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pacote completo -->
+    <div class="reveal" style="margin-top:2.5rem;border:1px solid var(--p-brd);background:var(--p-dim);padding:2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1.5rem;">
+      <div>
+        <span class="p-tag">Pacote Completo · Multi-plataforma</span>
+        <div class="p-ttl" style="margin-top:.5rem;">Todos os serviços + gestão dedicada + SLA prioritário</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="tier-p grd-t" style="font-size:2.25rem;">A partir de R$8.900</div>
+        <div class="tier-per">/mês · contrato anual sob consulta</div>
+        <a href="#cta" class="btn-p" style="margin-top:1rem;">Solicitar Proposta ↗</a>
+      </div>
+    </div>
+
+    <div class="reveal" style="display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:1.5rem;">
+      <span class="lbl">Setup básico: &lt; 48h após aprovação</span>
+      <span class="lbl">Garantia de ROI: 1º trimestre</span>
+      <span class="lbl">Pagamento: cartão, Pix ou boleto</span>
+      <span class="lbl" style="color:var(--p);">hello@m2w.com.br</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══ OBJECTIONS ════════════════════════════════════ -->
+<section class="sec" id="objecoes" style="background:var(--ink-warm);">
+  <div class="wrap">
+    <div class="sec-hd reveal">
+      <span class="ch">07 — Quebra de Objeções</span>
+      <h2 class="sec-title">Suas dúvidas, <span class="grd-t">respondidas.</span></h2>
+    </div>
+    <div class="acc">
+      <div class="acc-item reveal">
+        <div class="acc-q" onclick="toggleA(this)">
+          <div class="acc-ql">Mas R$2.490 parece caro para começar.</div>
+          <div class="acc-plus">+</div>
+        </div>
+        <div class="acc-a">Compare com a alternativa: um micro-influencer cobra entre <strong>R$1.000 e R$8.500 por post</strong>. Para 30 posts por mês, você estaria pagando de <strong>R$30.000 a R$255.000</strong> — sem garantia de resultado, sem exclusividade, sem dia de folga. O pacote básico entrega o mesmo volume por R$2.490. A pergunta não é se é caro. <strong>É se o que você paga hoje é barato.</strong></div>
+      </div>
+      <div class="acc-item reveal">
+        <div class="acc-q" onclick="toggleA(this)">
+          <div class="acc-ql">Um avatar de IA vai parecer falso para o meu público?</div>
+          <div class="acc-plus">+</div>
+        </div>
+        <div class="acc-a">O consumidor final não avalia a origem do conteúdo — avalia relevância, fluidez e consistência. Os modelos <strong>LTX-2.3 e Higgsfield</strong> já ultrapassaram o limiar de qualidade onde essa distinção importa. O que importa é se o conteúdo converte. A M2W garante isso.</div>
+      </div>
+      <div class="acc-item reveal">
+        <div class="acc-q" onclick="toggleA(this)">
+          <div class="acc-ql">E se eu quiser uma identidade exclusiva?</div>
+          <div class="acc-plus">+</div>
+        </div>
+        <div class="acc-a">Essa é uma das nossas modalidades. Desenvolvemos do zero um avatar com a identidade visual, tom e persona da sua marca — <strong>que nunca será usado por nenhum outro cliente.</strong></div>
+      </div>
+      <div class="acc-item reveal">
+        <div class="acc-q" onclick="toggleA(this)">
+          <div class="acc-ql">Parece complicado de implementar.</div>
+          <div class="acc-plus">+</div>
+        </div>
+        <div class="acc-a">Você define os objetivos e as diretrizes de marca. <strong>A M2W cuida do restante.</strong> Em menos de 48 horas o básico está rodando.</div>
+      </div>
+      <div class="acc-item reveal">
+        <div class="acc-q" onclick="toggleA(this)">
+          <div class="acc-ql">Como sei que vou ter retorno?</div>
+          <div class="acc-plus">+</div>
+        </div>
+        <div class="acc-a">Essa garantia existe em contrato. Se os resultados não forem atingidos no <strong>1º trimestre</strong>, continuamos trabalhando sem custo adicional até atingir.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ GUARANTEE ═════════════════════════════════════ -->
+<section class="sec" id="garantia">
+  <div class="wrap">
+    <div class="sec-hd reveal">
+      <span class="ch">08 — Garantia</span>
+    </div>
+    <div class="guar reveal">
+      <div class="guar-badge">
+        <div class="guar-badge-t">Garantia M2W<br>ROI no 1º Trimestre<br>+ Setup em 48h</div>
+      </div>
+      <div>
+        <div class="guar-ttl">Setup básico rodando em 48h após aprovação — ou devolvemos.</div>
+        <p class="guar-t">ROI não atingido no 1º trimestre — <strong>continuamos sem custo adicional até atingir.</strong></p>
+        <p class="guar-t" style="margin-top:.85rem;">A garantia existe porque a metodologia funciona. Se não fosse assim, não faríamos essa oferta.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ URGENCY ═══════════════════════════════════════ -->
+<section class="sec urg-bg" id="urgencia">
+  <div class="wrap">
+    <div class="urg-g">
+      <div class="reveal">
+        <div class="urg-big">450%</div>
+        <p class="lbl" style="margin-top:.75rem;">Crescimento do mercado em 12 meses</p>
+      </div>
+      <div class="reveal">
+        <span class="ch">09 — Urgência</span>
+        <h2 class="sec-title" style="margin-bottom:1.5rem;">A janela está <span class="grd-t">se fechando.</span></h2>
+        <div class="urg-body">
+          <p>Não é tendência. É uma janela que está se fechando.</p>
+          <p>As marcas que entraram primeiro no TikTok Shop têm dados de algoritmo, histórico de conversão e presença que as que chegam depois demoram <strong>6 a 12 meses para recuperar.</strong></p>
+          <p>A M2W está em <strong>expansão controlada</strong>. Novos projetos são aprovados por ordem de proposta.</p>
+          <p style="font-style:italic;color:var(--cream);font-family:'Cormorant Garamond',Georgia,serif;font-size:1.15rem;">Se você está lendo isso, a janela ainda está aberta.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FAQ ════════════════════════════════════════════ -->
+<section class="sec" id="faq">
+  <div class="wrap">
+    <div class="sec-hd reveal">
+      <span class="ch">10 — FAQ</span>
+      <h2 class="sec-title">Perguntas <span class="grd-t">frequentes.</span></h2>
+    </div>
+    <div class="acc">
+      <div class="acc-item reveal">
+        <div class="acc-q" onclick="toggleA(this)">
+          <div class="acc-ql">Por que é tão mais barato que influencer humano?</div>
+          <div class="acc-plus">+</div>
+        </div>
+        <div class="acc-a">Porque o pipeline de IA não tem cachê, não tem agenda e não tem renegociação. Custo fixo, volume escalável, qualidade consistente. A economia média é de <strong>90%+</strong> vs. micro-influencer com o mesmo volume.</div>
+      </div>
+      <div class="acc-item reveal">
+        <div class="acc-q" onclick="toggleA(this)">
+          <div class="acc-ql">Tenho que escolher só um serviço?</div>
+          <div class="acc-plus">+</div>
+        </div>
+        <div class="acc-a">Não. Pode começar com um e expandir. O Pacote Completo cobre todas as modalidades a partir de R$8.900/mês.</div>
+      </div>
+      <div class="acc-item reveal">
+        <div class="acc-q" onclick="toggleA(this)">
+          <div class="acc-ql">Vocês criam o avatar do zero ou ativo um pronto?</div>
+          <div class="acc-plus">+</div>
+        </div>
+        <div class="acc-a">As duas opções existem. Avatar do portfólio: setup em menos de 48h. Avatar exclusivo: prazo e investimento definidos na proposta.</div>
+      </div>
+      <div class="acc-item reveal">
+        <div class="acc-q" onclick="toggleA(this)">
+          <div class="acc-ql">Preciso entender de IA para usar?</div>
+          <div class="acc-plus">+</div>
+        </div>
+        <div class="acc-a">Não. A M2W gerencia todo o pipeline. Você define objetivos — a gente executa.</div>
+      </div>
+      <div class="acc-item reveal">
+        <div class="acc-q" onclick="toggleA(this)">
+          <div class="acc-ql">Tem suporte após o setup?</div>
+          <div class="acc-plus">+</div>
+        </div>
+        <div class="acc-a">Resposta em menos de 2 horas em dias úteis. Ponto de contato direto para cada cliente.</div>
+      </div>
+      <div class="acc-item reveal">
+        <div class="acc-q" onclick="toggleA(this)">
+          <div class="acc-ql">Quais formas de pagamento?</div>
+          <div class="acc-plus">+</div>
+        </div>
+        <div class="acc-a">Cartão de crédito, Pix e boleto. Parcelamento disponível conforme pacote.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FINAL CTA ══════════════════════════════════════ -->
+<section id="cta">
+  <div class="wrap">
+    <h2 class="cta-ttl reveal">A única pergunta<br>que resta é:<br><span class="grd-t">por que esperar?</span></h2>
+    <p class="cta-body reveal">Um micro-influencer humano custa 10 a 30 vezes mais do que o pacote básico da M2W — sem garantia de resultado, sem exclusividade, sem folga. O avatar de IA publica todos os dias. Nunca cancela. Nunca negocia cachê.</p>
+    <a href="mailto:hello@m2w.com.br" class="btn-p reveal" style="font-size:.75rem;padding:1.1rem 2.5rem;">Solicitar Proposta Agora ↗</a>
+    <p class="cta-micro reveal">Sem compromisso · Resposta em &lt; 2h · Setup básico em 48h</p>
+  </div>
+</section>
+
+<!-- ══ PS ═════════════════════════════════════════════ -->
+<div class="ps-block">
+  <p class="ps-t"><strong>P.S.</strong> — O mercado de influência com IA cresceu 450% em 12 meses e ainda está nos estágios iniciais no Brasil. As marcas que entram agora chegam com vantagem de dados, de algoritmo e de presença. A garantia protege você. O preço cabe no orçamento. O setup é rápido. <strong>O único risco real é esperar mais seis meses para tomar essa decisão.</strong></p>
+  <a href="mailto:hello@m2w.com.br" class="ps-email">hello@m2w.com.br</a>
+</div>
+
+<!-- ══ FOOTER ═════════════════════════════════════════ -->
+<footer>
+  <img src="logo.png" alt="M2W AI Solutions" style="height:28px;">
+  <span class="ft-copy">© 2026 M2W AI Solutions · Marketing to Win · LGPD Compliant</span>
+  <a href="mailto:hello@m2w.com.br" class="ft-copy" style="color:var(--p);">hello@m2w.com.br</a>
+</footer>
+
+<script>
+/* Nav scroll state */
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 60);
+}, { passive: true });
+
+/* Headline tabs */
+function setHL(i) {
+  document.querySelectorAll('.hl-v').forEach((el, j) => el.classList.toggle('on', i === j));
+  document.querySelectorAll('.hl-tab').forEach((el, j) => el.classList.toggle('on', i === j));
+}
+
+/* Pricing accordion */
+function toggleP(hd) {
+  const body = hd.nextElementSibling;
+  const chev = hd.querySelector('.p-chev');
+  const open = body.classList.contains('on');
+  body.classList.toggle('on', !open);
+  chev.classList.toggle('on', !open);
+}
+
+/* Objections / FAQ accordion */
+function toggleA(hd) {
+  const ans  = hd.nextElementSibling;
+  const plus = hd.querySelector('.acc-plus');
+  const open = ans.classList.contains('on');
+  ans.classList.toggle('on', !open);
+  plus.classList.toggle('on', !open);
+}
+
+/* Scroll reveal */
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('in');
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach((el, i) => {
+  el.style.transitionDelay = (i % 4) * 0.07 + 's';
+  io.observe(el);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+# macOS resource forks
+._*
+.DS_Store
+__MACOSX/
+
+# Claude workspace
+.claude/
+
+# Dev versions (keep only index.html / v6)
+screenshots/
+uploads/
