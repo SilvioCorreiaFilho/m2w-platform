@@ -132,7 +132,7 @@ Se o usuário parar de responder ou der respostas evasivas após 2 turnos:
 - Garantia funciona de verdade? Sim — ROI no 1º trimestre ou continuamos sem custo adicional. Está em contrato.`;
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS });
     }
@@ -199,18 +199,21 @@ export default {
         const lead = JSON.parse(leadMatch[1]);
         if (lead.email && lead.nome) {
           // 1. Forward to m2w-leads (CRM + email sequence)
-          fetch(LEADS_WORKER, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              nome:     lead.nome,
-              email:    lead.email,
-              empresa:  lead.empresa  || '',
-              whatsapp: lead.whatsapp || '',
-              servico:  lead.servico  || 'Chat M2W',
-              mensagem: 'Lead capturado via chatbot Mia Park',
-            }),
-          }).catch(e => console.error('lead forward ex', e.message));
+          // ctx.waitUntil keeps the worker alive until the background fetch finishes
+          ctx.waitUntil(
+            fetch(LEADS_WORKER, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                nome:     lead.nome,
+                email:    lead.email,
+                empresa:  lead.empresa  || '',
+                whatsapp: lead.whatsapp || '',
+                servico:  lead.servico  || 'Chat M2W',
+                mensagem: 'Lead capturado via chatbot Mia Park',
+              }),
+            }).catch(e => console.error('lead forward ex', e.message))
+          );
 
           leadCaptured = true;
         }
