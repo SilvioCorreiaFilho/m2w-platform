@@ -1,0 +1,6 @@
+name = "m2w-leads"
+main = "index.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+# Secrets são configurados via: npx wrangler secret put BREVO_API_KEY
