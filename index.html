@@ -2104,17 +2104,21 @@ document.querySelectorAll('.reveal').forEach((el,i)=>{
 }
 .chat-tag:hover{border-color:rgba(200,169,126,.48);color:#C8A97E;background:rgba(200,169,126,0.08);}
 
-/* ── Calendly Button ─────────────────────────────────────────────────────── */
-.calendly-btn{
-  display:inline-flex;align-items:center;gap:7px;
-  font-family:'Courier New',monospace;font-size:9.5px;
-  letter-spacing:1.2px;text-transform:uppercase;
-  padding:10px 18px;border-radius:20px;
-  border:1px solid rgba(200,169,126,0.4);
-  color:#C8A97E;background:rgba(200,169,126,0.07);
-  cursor:pointer;margin-top:6px;transition:all .18s;
+/* ── Calendly Embed ───────────────────────────────────────────────────── */
+.cal-embed-wrap{
+  width:100%;margin-top:4px;
+  border-radius:14px;overflow:hidden;
+  border:1px solid rgba(255,255,255,0.07);
+  background:rgba(255,255,255,0.02);
 }
-.calendly-btn:hover{background:rgba(200,169,126,0.14);border-color:rgba(200,169,126,0.65);}
+.cal-embed-label{
+  font-family:'Courier New',monospace;font-size:7.5px;
+  color:rgba(255,255,255,.22);letter-spacing:2px;text-transform:uppercase;
+  padding:8px 12px 0;display:block;
+}
+.cal-embed-inner{
+  min-width:316px;height:560px;
+}
 
 /* ── Input Area ──────────────────────────────────────────────────────────── */
 #m2w-chat-form{
@@ -2310,26 +2314,53 @@ document.querySelectorAll('.reveal').forEach((el,i)=>{
 
   // \u2500\u2500 Calendly \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   var CALENDLY_URL = 'https://calendly.com/silviofilhosf/nova-reuniao';
-  function openCalendly(){
-    if(window.Calendly){ Calendly.initPopupWidget({url:CALENDLY_URL}); return; }
-    var link=document.createElement('link'); link.rel='stylesheet';
-    link.href='https://assets.calendly.com/assets/external/widget.css';
-    document.head.appendChild(link);
-    var s=document.createElement('script');
-    s.src='https://assets.calendly.com/assets/external/widget.js';
-    s.onload=function(){ Calendly.initPopupWidget({url:CALENDLY_URL}); };
-    document.head.appendChild(s);
-  }
-  function addCalendlyBtn(){
-    var d=document.createElement('div');
-    d.className='msg msg-bot';
-    d.style.cssText='background:none;border:none;padding:0;';
-    var btn=document.createElement('button');
-    btn.className='calendly-btn';
-    btn.innerHTML='&#128197;&nbsp;Agendar 15 min \u2014 Silvio';
-    btn.onclick=openCalendly;
-    d.appendChild(btn); msgs.appendChild(d);
-    msgs.scrollTop=msgs.scrollHeight;
+  var calEmbedded  = false;
+
+  function addCalendlyEmbed(){
+    if(calEmbedded) return;
+    calEmbedded = true;
+
+    var wrap = document.createElement('div');
+    wrap.className = 'msg msg-bot';
+    wrap.style.cssText = 'background:none;border:none;padding:0;max-width:100%;width:100%;';
+
+    var outer = document.createElement('div');
+    outer.className = 'cal-embed-wrap';
+
+    var lbl = document.createElement('span');
+    lbl.className = 'cal-embed-label';
+    lbl.textContent = 'Escolha um horário com Silvio';
+    outer.appendChild(lbl);
+
+    var inner = document.createElement('div');
+    inner.className = 'cal-embed-inner';
+    outer.appendChild(inner);
+    wrap.appendChild(outer);
+    msgs.appendChild(wrap);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    function mountCal(){
+      Calendly.initInlineWidget({
+        url: CALENDLY_URL + '?hide_event_type_details=1&hide_gdpr_banner=1',
+        parentElement: inner,
+      });
+      setTimeout(function(){ msgs.scrollTop = msgs.scrollHeight; }, 400);
+    }
+
+    if(window.Calendly){
+      mountCal();
+    } else {
+      if(!document.querySelector('link[href*="calendly"]')){
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://assets.calendly.com/assets/external/widget.css';
+        document.head.appendChild(link);
+      }
+      var s = document.createElement('script');
+      s.src = 'https://assets.calendly.com/assets/external/widget.js';
+      s.onload = mountCal;
+      document.head.appendChild(s);
+    }
   }
 
   // \u2500\u2500 Markdown renderer \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -2382,7 +2413,7 @@ document.querySelectorAll('.reveal').forEach((el,i)=>{
       var b=document.createElement('button'); b.className='chat-tag'; b.textContent=label;
       b.onclick=function(){
         row.remove();
-        if(label==='Agendar com Silvio'){ openCalendly(); }
+        if(label==='Falar com Silvio'){ addCalendlyEmbed(); }
         else{ submitMsg(label); }
       };
       row.appendChild(b);
@@ -2493,14 +2524,13 @@ document.querySelectorAll('.reveal').forEach((el,i)=>{
 
       if(data.leadCaptured){
         setTimeout(function(){
-          var n=addMsg('\u2713 Informa\u00E7\u00F5es registradas. O Silvio entra em contato em menos de 24\u00A0h.','bot');
+          var n=addMsg('✓ Informações registradas. Você receberá uma análise personalizada em menos de 24h.','bot');
           n.style.background='rgba(134,239,172,0.07)';
           n.style.borderColor='rgba(134,239,172,0.18)';
           n.style.color='#86efac';
         },500);
-        setTimeout(addCalendlyBtn,1100);
       }
-      if(data.calendly){ setTimeout(addCalendlyBtn,600); }
+      if(data.calendly){ setTimeout(addCalendlyEmbed,600); }
       sending=false; updateSend(); input.focus();
     })
     .catch(function(){
