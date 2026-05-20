@@ -10,45 +10,66 @@
   display:flex;flex-direction:column;align-items:flex-end;
 }
 #m2w-pill{
-  display:flex;align-items:center;justify-content:center;
-  padding:0 28px;height:58px;border-radius:29px;
-  background:rgba(8,8,8,.76);
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  padding:0 22px;height:52px;border-radius:26px;
+  background:rgba(8,8,8,.82);
   backdrop-filter:blur(22px) saturate(180%);
   -webkit-backdrop-filter:blur(22px) saturate(180%);
-  border:1px solid rgba(255,255,255,.28);
+  border:1px solid rgba(139,92,246,.35);
   cursor:pointer;
   box-shadow:
     0 16px 52px rgba(0,0,0,.9),
-    0 0 0 1px rgba(255,255,255,.06),
-    0 0 30px rgba(255,255,255,.09),
-    inset 0 1px 0 rgba(255,255,255,.15);
-  animation:pill-ring 3.6s ease-in-out infinite;
+    0 0 0 1px rgba(139,92,246,.08),
+    0 0 32px rgba(139,92,246,.14),
+    inset 0 1px 0 rgba(255,255,255,.12);
+  animation:pill-ring 3.8s ease-in-out infinite;
   transition:transform .22s,box-shadow .22s,border-color .22s;
   white-space:nowrap;
 }
 #m2w-pill:hover{
-  border-color:rgba(255,255,255,.56);animation:none;
+  border-color:rgba(139,92,246,.65);animation:none;
   transform:translateY(-2px) scale(1.025);
   box-shadow:
     0 22px 60px rgba(0,0,0,.92),
-    0 0 0 2px rgba(255,255,255,.1),
-    0 0 48px rgba(255,255,255,.22),
-    inset 0 1px 0 rgba(255,255,255,.24);
+    0 0 0 2px rgba(139,92,246,.15),
+    0 0 52px rgba(139,92,246,.28),
+    inset 0 1px 0 rgba(255,255,255,.2);
 }
 #m2w-pill:active{transform:translateY(0) scale(.98);}
 @keyframes pill-ring{
   0%,100%{
-    border-color:rgba(255,255,255,.22);
-    box-shadow:0 16px 52px rgba(0,0,0,.9),0 0 0 0 rgba(255,255,255,.32),0 0 24px rgba(255,255,255,.07),inset 0 1px 0 rgba(255,255,255,.13);
+    border-color:rgba(139,92,246,.28);
+    box-shadow:0 16px 52px rgba(0,0,0,.9),0 0 0 0 rgba(139,92,246,.3),0 0 24px rgba(139,92,246,.1),inset 0 1px 0 rgba(255,255,255,.1);
   }
   50%{
-    border-color:rgba(255,255,255,.48);
-    box-shadow:0 16px 52px rgba(0,0,0,.9),0 0 0 14px rgba(255,255,255,0),0 0 42px rgba(255,255,255,.17),inset 0 1px 0 rgba(255,255,255,.22);
+    border-color:rgba(139,92,246,.52);
+    box-shadow:0 16px 52px rgba(0,0,0,.9),0 0 0 10px rgba(139,92,246,0),0 0 44px rgba(139,92,246,.2),inset 0 1px 0 rgba(255,255,255,.17);
   }
 }
+.pill-online-dot{
+  width:7px;height:7px;border-radius:50%;flex-shrink:0;
+  background:#4ade80;
+  box-shadow:0 0 0 0 rgba(74,222,128,.6);
+  animation:online-pulse 2.6s ease-in-out infinite;
+}
+@keyframes online-pulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.55);}
+  50%{box-shadow:0 0 0 5px rgba(74,222,128,0);}
+}
+.pill-online-label{
+  font-size:11.5px;font-weight:500;letter-spacing:.4px;
+  color:rgba(255,255,255,.88);
+  text-shadow:0 0 18px rgba(139,92,246,.3);
+  font-family:inherit;
+}
+.pill-online-flags{
+  font-size:12px;letter-spacing:1.5px;line-height:1;
+}
+.pill-sep{
+  width:1px;height:14px;background:rgba(255,255,255,.14);flex-shrink:0;
+}
 .pill-text{
-  font-size:12px;letter-spacing:.7px;color:rgba(255,255,255,.9);
-  text-shadow:0 0 20px rgba(255,255,255,.25);
+  font-size:11px;letter-spacing:.55px;color:rgba(255,255,255,.62);
   transition:opacity .28s ease,transform .28s ease;
   font-family:inherit;
 }
@@ -72,6 +93,24 @@
     0 0 28px rgba(255,255,255,0.12),
     inset 0 1px 0 rgba(255,255,255,0.14),
     inset 0 -1px 0 rgba(255,255,255,0.04);
+}
+
+/* ── Lang strip ─────────────────────────────────────────────────────────── */
+.lang-strip{
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  padding:5px 0 4px;
+  background:rgba(139,92,246,0.04);
+  border-bottom:1px solid rgba(139,92,246,0.08);
+  flex-shrink:0;
+}
+.lang-strip-flag{font-size:12px;line-height:1;opacity:.7;}
+.lang-strip-dot{
+  width:2px;height:2px;border-radius:50%;
+  background:rgba(255,255,255,.15);flex-shrink:0;
+}
+.lang-strip-label{
+  font-family:'Courier New',monospace;font-size:6.5px;
+  color:rgba(255,255,255,.2);letter-spacing:2px;text-transform:uppercase;
 }
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
@@ -291,12 +330,27 @@
 <!-- LAUNCHER -->
 <div id="m2w-launcher">
   <button id="m2w-pill" aria-label="Chat M2W" aria-expanded="false">
+    <span class="pill-online-dot"></span>
+    <span class="pill-online-label">Online</span>
+    <span class="pill-online-flags">🇧🇷 🇺🇸 🇪🇸</span>
+    <span class="pill-sep"></span>
     <span class="pill-text" id="pill-text">Como podemos ajudar?</span>
   </button>
 </div>
 
 <!-- CHAT BOX -->
 <div id="m2w-chat-box" role="dialog" aria-label="Chat Mia — M2W AI Solutions">
+
+  <!-- Language strip -->
+  <div class="lang-strip">
+    <span class="lang-strip-flag">🇧🇷</span>
+    <span class="lang-strip-dot"></span>
+    <span class="lang-strip-flag">🇺🇸</span>
+    <span class="lang-strip-dot"></span>
+    <span class="lang-strip-flag">🇪🇸</span>
+    <span class="lang-strip-dot"></span>
+    <span class="lang-strip-label">Português · English · Español</span>
+  </div>
 
   <!-- Header -->
   <div id="m2w-chat-head">
@@ -383,14 +437,14 @@
   }, 3200);
 
   // ── Strings ───────────────────────────────────────────────────────
-  var WELCOME = 'Olá! Sou a Mia, consultora de IA da M2W AI Solutions. Posso te ajudar a escalar suas vendas com influencers digitais gerados por IA ✨ Por onde quer começar?';
+  var WELCOME = 'Olá! Sou a **Mia**, consultora de IA da M2W. 🇧🇷\n*Hello! I\'m Mia, M2W\'s AI consultant.* 🇺🇸\n*¡Hola! Soy Mia, consultora de IA de M2W.* 🇪🇸\n\nPodemos conversar em **português**, **inglês** ou **espanhol** — você escolhe!\n\nMe conta: qual é o seu maior desafio hoje com conteúdo ou vendas?';
   var TAGS = [
+    'Gasto muito com influencers',
+    'Quero vender no TikTok Shop',
+    'Não consigo escalar conteúdo',
+    'Como funciona a IA?',
     'Ver preços',
-    'TikTok Shop',
-    'Influencer exclusivo',
-    'Como funciona?',
-    'Garantia de ROI',
-    'Agendar com Silvio'
+    'Falar com Silvio'
   ];
 
   // ── Calendly ─────────────────────────────────────────────────────

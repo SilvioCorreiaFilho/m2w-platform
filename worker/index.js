@@ -209,7 +209,7 @@ export default {
       const res = await brevoPost(key, '/contacts', {
         email,
         attributes: {
-          NOME: first, SOBRENOME: last,
+          FIRSTNAME: first, LASTNAME: last,
           SMS: whatsapp, EMPRESA: empresa,
           SERVICO: servico, ORIGEM: 'm2w-ai.com',
         },
