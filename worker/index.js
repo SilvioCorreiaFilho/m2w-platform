@@ -14,6 +14,23 @@ const PIPELINE_ID = '6a0d0fb86662659f87dbfd17';
 const STAGE_NOVO  = 'd700c0e7-c2f4-4ba8-9c87-8d859c013029';
 const OWNER_ID    = '6a0d0fb0b7e32cbb90056c9d';
 
+// Custom attributes to auto-create on cold start (Brevo ignores 400 if already exists)
+const CUSTOM_ATTRS = ['PLATAFORMA', 'BUDGET', 'SETOR', 'VOLUME_ATUAL'];
+let attrsReady = false;
+async function ensureAttributes(key) {
+  if (attrsReady) return;
+  attrsReady = true;
+  await Promise.allSettled(
+    CUSTOM_ATTRS.map(name =>
+      fetch(`${BREVO_API}/contacts/attributes/contact/${name}`, {
+        method: 'POST',
+        headers: { 'api-key': key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'text' }),
+      })
+    )
+  );
+}
+
 const TASK = {
   call:     '6a0d0fb86662659f87dbfd10',
   email:    '6a0d0fb86662659f87dbfd0f',
@@ -189,6 +206,7 @@ export default {
     const {
       nome = '', email = '', empresa = '',
       whatsapp = '', servico = '', mensagem = '',
+      plataforma = '', setor = '', volume_atual = '', budget = '',
       perfil = '', score = '',
     } = body;
 
@@ -196,7 +214,8 @@ export default {
       return json({ ok: false, error: 'missing_fields' }, 400);
     }
 
-    const key   = env.BREVO_API_KEY;
+    const key = env.BREVO_API_KEY;
+    await ensureAttributes(key);
     const parts = nome.trim().split(' ');
     const first = parts[0] || '';
     const last  = parts.slice(1).join(' ') || '';
@@ -212,6 +231,8 @@ export default {
           FIRSTNAME: first, LASTNAME: last,
           SMS: whatsapp, EMPRESA: empresa,
           SERVICO: servico, ORIGEM: 'm2w-ai.com',
+          PLATAFORMA: plataforma, BUDGET: budget,
+          SETOR: setor, VOLUME_ATUAL: volume_atual,
         },
         listIds: [LIST_ID],
         updateEnabled: true,
@@ -233,10 +254,14 @@ export default {
     try {
       const dealName = `Lead M2W — ${nome}${servico ? ' — ' + servico : ''}`;
       const descParts = [
-        empresa  && `Empresa: ${empresa}`,
-        perfil   && `Perfil: ${perfil}`,
-        score    && `Score: ${score}`,
-        mensagem && `Origem: ${mensagem}`,
+        empresa      && `Empresa: ${empresa}`,
+        setor        && `Setor: ${setor}`,
+        plataforma   && `Plataforma: ${plataforma}`,
+        volume_atual && `Volume atual: ${volume_atual}`,
+        budget       && `Budget: ${budget}`,
+        perfil       && `Perfil: ${perfil}`,
+        score        && `Score: ${score}`,
+        mensagem     && `Origem: ${mensagem}`,
       ].filter(Boolean);
 
       const res = await brevoPost(key, '/crm/deals', {
@@ -269,7 +294,7 @@ export default {
           name:       `📞 Ligar para ${nome} — novo lead M2W`,
           taskTypeId: TASK.call,
           date:       daysFromNow(1),
-          notes:      `Score: ${score || '—'} | Serviço: ${servico || '—'} | WA: ${whatsapp || '—'} | Perfil: ${perfil || '—'}`,
+          notes:      `Score: ${score || '—'} | Serviço: ${servico || '—'} | Plataforma: ${plataforma || '—'} | Setor: ${setor || '—'} | Budget: ${budget || '—'} | Volume: ${volume_atual || '—'} | WA: ${whatsapp || '—'} | Perfil: ${perfil || '—'}`,
           duration:   20,
         },
         {

@@ -41,7 +41,7 @@
 <!-- Performance: preconnect -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link rel="preload" as="video" href="public/hero/hero-bg.mp4" type="video/mp4">
+<link rel="preload" as="video" href="public/hero/hero-bg.mp4" type="video/mp4" media="(min-width:769px)">
 
 <!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,300&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -181,6 +181,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 .hero-portraits{position:absolute;inset:0;z-index:0;overflow:hidden;background:var(--deep)}
 .hero-bg-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;will-change:transform;animation:videoDrift 24s ease-in-out infinite alternate;filter:contrast(1.12) saturate(1.25) brightness(1.08)}
 @keyframes videoDrift{0%{transform:scale(1.04)}100%{transform:scale(1.1)}}
+@media(max-width:768px){.hero-bg-video{object-position:center 18%;filter:contrast(1.18) saturate(1.42) brightness(1.05)}}
 /* legacy portrait fallback */
 .hero-portrait{display:none}
 
@@ -727,7 +728,8 @@ footer{border-top:1px solid var(--g-brd);padding:1.75rem 2.5rem;display:flex;jus
 <section id="hero">
   <!-- Full-bleed background video -->
   <div class="hero-portraits">
-    <video class="hero-bg-video" src="public/hero/hero-bg.mp4" autoplay muted loop playsinline preload="auto" poster="public/models/model-skin.jpeg" aria-label="Influencer digital da M2W gravando conteúdo para TikTok Shop"></video>
+    <video class="hero-bg-video" id="hero-bg-video" autoplay muted loop playsinline preload="auto" poster="public/models/model-skin.jpeg" aria-label="Influencer digital da M2W gravando conteúdo para TikTok Shop"></video>
+    <script>(function(){var v=document.getElementById('hero-bg-video');v.src=window.matchMedia('(max-width:768px)').matches?'public/hero/hero-bg-mobile.mp4':'public/hero/hero-bg.mp4';})()</script>
   </div>
 
   <!-- Cinematic overlays for video legibility -->

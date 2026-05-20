@@ -71,7 +71,9 @@ Sinais de fundo: pediu proposta, comparou planos, perguntou sobre contrato, diss
 "Para montar uma análise personalizada para o seu caso, me passa seu nome e e-mail? Sem compromisso — o Silvio analisa pessoalmente. ✨"
 
 Quando tiver NOME + E-MAIL confirmados, responda com uma mensagem de confirmação calorosa e na última linha, sem quebra de linha antes do {, coloque:
-LEAD_CAPTURED:{"nome":"...","email":"...","servico":"...","perfil":"resumo do negocio em 1 frase","score":"alto|medio|baixo"}
+LEAD_CAPTURED:{"nome":"...","email":"...","servico":"...","plataforma":"TikTok Shop|Instagram|marketplace|loja própria|outro","setor":"beleza|moda|suplementos|alimentos|tecnologia|serviços|outro","volume_atual":"0-10 posts/mês|10-30|30-60|60+|não informado","budget":"até R$3k|R$3k-7k|acima de R$7k|não informado","perfil":"resumo do negocio em 1 frase","score":"alto|medio|baixo"}
+
+Preencha com o máximo de campos que a conversa permitiu inferir. Use "não informado" apenas quando não houve nenhum sinal.
 
 **Agenda inline — SOMENTE quando o lead pedir explicitamente para marcar uma call ou falar agora:**
 "Claro! Você pode escolher o horário aqui mesmo — abre a agenda do Silvio direto no chat. 📅"
@@ -227,14 +229,18 @@ export default {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                nome:     lead.nome,
-                email:    lead.email,
-                empresa:  lead.empresa  || '',
-                whatsapp: lead.whatsapp || '',
-                servico:  lead.servico  || 'Chat M2W',
-                perfil:   lead.perfil   || '',
-                score:    lead.score    || '',
-                mensagem: 'Lead capturado via chatbot Mia Park',
+                nome:         lead.nome,
+                email:        lead.email,
+                empresa:      lead.empresa      || '',
+                whatsapp:     lead.whatsapp     || '',
+                servico:      lead.servico      || 'Chat M2W',
+                plataforma:   lead.plataforma   || '',
+                setor:        lead.setor        || '',
+                volume_atual: lead.volume_atual || '',
+                budget:       lead.budget       || '',
+                perfil:       lead.perfil       || '',
+                score:        lead.score        || '',
+                mensagem:     'Lead capturado via chatbot Mia Park',
               }),
             })
             .then(r => r.json())
