@@ -43,13 +43,28 @@ function emailBase(content) {
 <tr><td align="center">
 <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
   <tr><td style="padding-bottom:28px;text-align:center;">
-    <p style="font-size:18px;font-weight:700;color:#C8A97E;letter-spacing:2px;margin:0;font-family:'Courier New',monospace;">M2W AI SOLUTIONS</p>
+    <img src="https://m2w-ai.com/logo-white.png" alt="M2W AI Solutions" height="28" style="display:block;margin:0 auto;">
   </td></tr>
   <tr><td style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:36px 32px;">
     ${content}
   </td></tr>
-  <tr><td style="padding-top:24px;text-align:center;">
-    <p style="font-size:11px;color:rgba(255,255,255,0.2);margin:0;">M2W AI Solutions &middot; Bras&iacute;lia, DF &middot; <a href="https://m2w-ai.com" style="color:rgba(200,169,126,0.55);text-decoration:none;">m2w-ai.com</a></p>
+  <tr><td style="padding-top:28px;text-align:center;">
+    <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
+      <tr>
+        <td style="padding-right:10px;vertical-align:middle;">
+          <img src="https://m2w-ai.com/logo-white.png" alt="M2W" height="16" style="display:block;opacity:0.55;">
+        </td>
+        <td style="border-left:1px solid rgba(255,255,255,0.1);padding-left:10px;vertical-align:middle;">
+          <p style="font-size:12px;color:rgba(255,255,255,0.45);margin:0;font-weight:500;">Silvio Correia Filho</p>
+        </td>
+      </tr>
+    </table>
+    <p style="font-size:11px;color:rgba(255,255,255,0.2);margin:10px 0 0;">
+      Bras&iacute;lia, DF &nbsp;&middot;&nbsp;
+      <a href="https://m2w-ai.com" style="color:rgba(200,169,126,0.55);text-decoration:none;">m2w-ai.com</a>
+      &nbsp;&middot;&nbsp;
+      <a href="https://wa.me/5561991533243" style="color:rgba(200,169,126,0.55);text-decoration:none;">WhatsApp +55 61 99153-3243</a>
+    </p>
   </td></tr>
 </table></td></tr></table></body></html>`;
 }
