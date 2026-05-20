@@ -371,21 +371,28 @@ export default {
       },
     ];
 
-    await Promise.allSettled(
-      sequence.map(({ sender: s, to, cc, subject, htmlContent, scheduledAt }) => {
+    const emailResults = await Promise.allSettled(
+      sequence.map(async ({ sender: s, to, cc, subject, htmlContent, scheduledAt }) => {
         const payload = { sender: s, to, subject, htmlContent };
         if (scheduledAt) payload.scheduledAt = scheduledAt;
         if (cc)          payload.cc = cc;
-        return brevoPost(key, '/smtp/email', payload)
-          .then(async r => {
-            if (!r.ok) console.error('email err', subject, r.status, await r.text());
-            else console.log('email queued', subject);
-          })
-          .catch(e => console.error('email ex', subject, e.message));
+        const r = await brevoPost(key, '/smtp/email', payload);
+        if (!r.ok) {
+          const errText = await r.text();
+          console.error('email err', subject, r.status, errText);
+          return { subject, status: r.status, error: errText };
+        }
+        const body = await r.json().catch(() => ({}));
+        console.log('email queued', subject, body.messageId || '');
+        return { subject, status: 200, messageId: body.messageId };
       })
     );
 
-    return json({ ok: true, contactId, dealId });
+    const emailErrors = emailResults
+      .filter(r => r.status === 'rejected' || r.value?.error)
+      .map(r => r.reason?.message || r.value?.error || 'unknown');
+
+    return json({ ok: true, contactId, dealId, emailErrors: emailErrors.length ? emailErrors : undefined });
   },
 };
 
