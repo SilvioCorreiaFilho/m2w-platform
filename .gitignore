@@ -9,3 +9,14 @@ __MACOSX/
 # Dev versions (keep only index.html / v6)
 screenshots/
 uploads/
+
+# Large media files — ficam só no Hostinger, não versionar
+public/hero/*.mp4
+public/portfolio/*.mp4
+public/portfolio/*.mov
+public/models/*.mp4
+public/models/*.mov
+
+# Wrangler build artifacts
+worker/.wrangler/
+worker/chat/.wrangler/
