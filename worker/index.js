@@ -82,6 +82,14 @@ function emailBase(content) {
       &nbsp;&middot;&nbsp;
       <a href="https://wa.me/5561991533243" style="color:rgba(200,169,126,0.55);text-decoration:none;">WhatsApp +55 61 99153-3243</a>
     </p>
+    <table cellpadding="0" cellspacing="0" style="margin:18px auto 0;">
+      <tr><td align="center">
+        <a href="https://m2w-ai.com" style="text-decoration:none;">
+          <img src="https://m2w-ai.com/public/qr-venha.png" alt="Acesse m2w-ai.com" width="88" height="88" style="display:block;border-radius:10px;opacity:0.72;">
+        </a>
+        <p style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1.8px;text-transform:uppercase;margin:5px 0 0;font-family:'Courier New',monospace;">Venha!</p>
+      </td></tr>
+    </table>
   </td></tr>
 </table></td></tr></table></body></html>`;
 }
@@ -339,6 +347,8 @@ export default {
     const emailTo      = [{ email, name: nome }];
     const ccSilvio     = [{ email: 'comercial@m2w-ai.com', name: 'Silvio Correia Filho' }];
 
+    // Brevo transactional API limit: max 3 days ahead.
+    // D+0 welcome sends immediately; D+3/D+7/D+14 are handled via CRM tasks.
     const sequence = [
       {
         sender,
@@ -346,28 +356,6 @@ export default {
         cc:          ccSilvio,
         subject:     `Olá ${first}! Sua análise M2W está chegando ✨`,
         htmlContent: buildWelcomeHtml(first, servico, perfil),
-        scheduledAt: null,
-      },
-      {
-        sender:      senderSilvio,
-        to:          emailTo,
-        subject:     `${first}, uma pergunta rápida 💬`,
-        htmlContent: buildFollowHtml3(first, servico),
-        scheduledAt: daysFromNow(3),
-      },
-      {
-        sender:      senderSilvio,
-        to:          emailTo,
-        subject:     `Comparativo: ${first} vs influencer humano 📊`,
-        htmlContent: buildFollowHtml7(first, servico),
-        scheduledAt: daysFromNow(7),
-      },
-      {
-        sender:      senderSilvio,
-        to:          emailTo,
-        subject:     `${first}, último recado da M2W 👋`,
-        htmlContent: buildFollowHtml14(first),
-        scheduledAt: daysFromNow(14),
       },
     ];
 

@@ -68,8 +68,18 @@
     "name": "Brazil"
   },
   "sameAs": [
-    "https://m2w-ai.com/"
-  ]
+    "https://m2w-ai.com/",
+    "https://wa.me/5561991533243",
+    "https://www.instagram.com/m2w.ai",
+    "https://www.tiktok.com/@m2w.ai"
+  ],
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+55-61-99153-3243",
+    "contactType": "sales",
+    "email": "comercial@m2w-ai.com",
+    "availableLanguage": ["Portuguese", "English", "Spanish"]
+  }
 }
 </script>
 
@@ -81,7 +91,7 @@
   "name": "M2W AI Solutions",
   "image": "https://m2w-ai.com/public/og-cover.jpg",
   "priceRange": "R$1.990 – R$12.990 /mês",
-  "telephone": "+55-61-0000-0000",
+  "telephone": "+55-61-99153-3243",
   "address": {
     "@type": "PostalAddress",
     "addressLocality": "Brasília",
@@ -850,7 +860,7 @@ footer{border-top:1px solid var(--g-brd);padding:1.75rem 2.5rem;display:flex;jus
         <video class="pb-media" autoplay muted loop playsinline preload="auto" src="public/portfolio/escova-hook-final.mp4"></video>
         <div class="pb-halftone"></div>
         <div class="pb-grad"></div>
-        <div class="pb-hover-ov"><div class="pb-hover-pill">Ver Conteúdo →</div></div>
+        <div class="pb-hover-ov"></div>
         <div class="pb-info">
           <span class="pb-tag">TikTok Shop · Ativo</span>
           <div class="pb-name">Mia Park</div>
@@ -868,7 +878,7 @@ footer{border-top:1px solid var(--g-brd);padding:1.75rem 2.5rem;display:flex;jus
         <video class="pb-media" autoplay muted loop playsinline preload="auto" src="public/portfolio/luna-chen.mp4" style="object-position:center 15%"></video>
         <div class="pb-halftone"></div>
         <div class="pb-grad"></div>
-        <div class="pb-hover-ov"><div class="pb-hover-pill">Ver Conteúdo →</div></div>
+        <div class="pb-hover-ov"></div>
         <div class="pb-info">
           <span class="pb-tag">Fashion &amp; Lifestyle</span>
           <div class="pb-name">Luna Chen</div>
@@ -881,7 +891,7 @@ footer{border-top:1px solid var(--g-brd);padding:1.75rem 2.5rem;display:flex;jus
         <video class="pb-media" autoplay muted loop playsinline preload="auto" src="public/portfolio/kai-santos.mp4"></video>
         <div class="pb-halftone"></div>
         <div class="pb-grad"></div>
-        <div class="pb-hover-ov"><div class="pb-hover-pill">Ver Conteúdo →</div></div>
+        <div class="pb-hover-ov"></div>
         <div class="pb-info">
           <span class="pb-tag">Fitness &amp; Wellness</span>
           <div class="pb-name">Kai Santos</div>
@@ -894,7 +904,7 @@ footer{border-top:1px solid var(--g-brd);padding:1.75rem 2.5rem;display:flex;jus
         <video class="pb-media" autoplay muted loop playsinline preload="auto" src="public/portfolio/sofia-reyes.mp4"></video>
         <div class="pb-halftone"></div>
         <div class="pb-grad"></div>
-        <div class="pb-hover-ov"><div class="pb-hover-pill">Ver Conteúdo →</div></div>
+        <div class="pb-hover-ov"></div>
         <div class="pb-info">
           <span class="pb-tag">Beauty &amp; Skincare</span>
           <div class="pb-name">Sofia Reyes</div>
@@ -907,7 +917,7 @@ footer{border-top:1px solid var(--g-brd);padding:1.75rem 2.5rem;display:flex;jus
         <video class="pb-media" autoplay muted loop playsinline preload="auto" src="public/portfolio/sua-persona.mp4" style="object-position:center top"></video>
         <div class="pb-halftone"></div>
         <div class="pb-grad"></div>
-        <div class="pb-hover-ov"><div class="pb-hover-pill">Criar sua Persona →</div></div>
+        <div class="pb-hover-ov"></div>
         <div class="pb-info" style="justify-content:flex-end;display:flex;flex-direction:column;height:100%;padding:2rem 2.25rem 2.25rem">
           <span class="pb-tag">Sua Marca</span>
           <div class="pb-name" style="font-size:2.6rem;line-height:.96">Sua<br>Persona</div>
@@ -1190,7 +1200,7 @@ const sm=document.getElementById('svc-mount');
 SVCS.forEach(s=>{
   const d=document.createElement('div');
   d.className=`svc-card glass glass-h reveal${s.hi?' hi':''}`;
-  d.innerHTML=`<div class="svc-icon" style="background:${s.color}18;border:1px solid ${s.color}30"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${s.color}" stroke-width="2"><path d="M12 2l9 4.5V12c0 5-4 9.3-9 11-5-1.7-9-6-9-11V6.5L12 2z"/></svg></div><span class="svc-chip" style="background:${s.color}12;border:1px solid ${s.color}25;color:${s.color}">${s.chip}</span><div class="svc-ttl">${s.ttl}</div><div class="svc-desc">${s.desc}</div><div class="svc-metrics">${s.metrics.map(([v,l])=>`<div><div class="svc-m-val">${v}</div><div class="svc-m-lbl">${l}</div></div>`).join('')}</div><ul class="svc-feats">${s.feats.map(f=>`<li>${f}</li>`).join('')}</ul><a href="#cta" class="btn-${s.hi?'glow':'out'}" style="display:inline-flex;font-size:.78rem;padding:.7rem 1.5rem">Activar ${s.chip} →</a>`;
+  d.innerHTML=`<div class="svc-icon" style="background:${s.color}18;border:1px solid ${s.color}30"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${s.color}" stroke-width="2"><path d="M12 2l9 4.5V12c0 5-4 9.3-9 11-5-1.7-9-6-9-11V6.5L12 2z"/></svg></div><span class="svc-chip" style="background:${s.color}12;border:1px solid ${s.color}25;color:${s.color}">${s.chip}</span><div class="svc-ttl">${s.ttl}</div><div class="svc-desc">${s.desc}</div><div class="svc-metrics">${s.metrics.map(([v,l])=>`<div><div class="svc-m-val">${v}</div><div class="svc-m-lbl">${l}</div></div>`).join('')}</div><ul class="svc-feats">${s.feats.map(f=>`<li>${f}</li>`).join('')}</ul><a href="#cta" class="btn-${s.hi?'glow':'out'}" style="display:inline-flex;font-size:.78rem;padding:.7rem 1.5rem">Ativar ${s.chip} →</a>`;
   sm.appendChild(d);
 });
 
