@@ -4,3 +4,8 @@ compatibility_date = "2024-01-01"
 
 [vars]
 # Secrets são configurados via: npx wrangler secret put BREVO_API_KEY
+
+# Cron Trigger: roda 1x/dia às 13:00 UTC (10:00 BRT) para despachar D+7 e D+14
+# D+0 é imediato e D+3 é agendado via scheduledAt no fetch handler (Brevo aceita até 72h)
+[triggers]
+crons = ["0 13 * * *"]

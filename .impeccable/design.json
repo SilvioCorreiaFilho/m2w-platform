@@ -1,0 +1,230 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-22T00:00:00Z",
+  "title": "Design System: M2W AI Solutions",
+  "extensions": {
+    "colorMeta": {
+      "deep-render-black": {
+        "role": "neutral",
+        "displayName": "Deep Render Black",
+        "canonical": "oklch(8% 0.005 270)",
+        "tonalRamp": ["#06060e", "#0b0b18", "#0e0e1f", "#16162a", "#1f1f3a", "#2a2a4d", "#3a3a66", "#4a4a80"]
+      },
+      "studio-surface": {
+        "role": "neutral",
+        "displayName": "Studio Surface",
+        "canonical": "oklch(11% 0.01 270)",
+        "tonalRamp": ["#06060e", "#0b0b18", "#0e0e1f", "#13132a", "#1a1a3a", "#23234d", "#2e2e66", "#3b3b80"]
+      },
+      "monitor-surface-raised": {
+        "role": "neutral",
+        "displayName": "Monitor Surface Raised",
+        "canonical": "oklch(13% 0.012 270)",
+        "tonalRamp": ["#0a0a14", "#0e0e1f", "#13132a", "#1a1a3a", "#23234d", "#2e2e66", "#3b3b80", "#4d4d99"]
+      },
+      "glass-veil": {
+        "role": "neutral",
+        "displayName": "Glass Veil",
+        "canonical": "rgba(255,255,255,0.04)",
+        "tonalRamp": ["rgba(255,255,255,0.02)", "rgba(255,255,255,0.03)", "rgba(255,255,255,0.04)", "rgba(255,255,255,0.06)", "rgba(255,255,255,0.08)", "rgba(255,255,255,0.12)", "rgba(255,255,255,0.18)", "rgba(255,255,255,0.25)"]
+      },
+      "glass-border": {
+        "role": "neutral",
+        "displayName": "Glass Border",
+        "canonical": "rgba(255,255,255,0.08)",
+        "tonalRamp": ["rgba(255,255,255,0.04)", "rgba(255,255,255,0.06)", "rgba(255,255,255,0.08)", "rgba(255,255,255,0.12)", "rgba(255,255,255,0.18)", "rgba(255,255,255,0.25)", "rgba(255,255,255,0.35)", "rgba(255,255,255,0.5)"]
+      },
+      "tela-violet": {
+        "role": "primary",
+        "displayName": "Tela Violet",
+        "canonical": "oklch(54% 0.25 295)",
+        "tonalRamp": ["#2a1456", "#3d1d7e", "#4f24a3", "#6730c5", "#7c3aed", "#9259f3", "#a880f7", "#c2a8fb"]
+      },
+      "monitor-violet": {
+        "role": "primary",
+        "displayName": "Monitor Violet",
+        "canonical": "oklch(60% 0.22 290)",
+        "tonalRamp": ["#312060", "#43288a", "#5731ad", "#6f3fcd", "#8b5cf6", "#a07ef8", "#b59ffa", "#cdc1fc"]
+      },
+      "carnival-magenta": {
+        "role": "secondary",
+        "displayName": "Carnival Magenta",
+        "canonical": "oklch(65% 0.28 325)",
+        "tonalRamp": ["#4a1454", "#6e1c80", "#9223a5", "#b62cca", "#d946ef", "#e168f2", "#e98af5", "#f0a9f8"]
+      },
+      "algorithm-cyan": {
+        "role": "secondary",
+        "displayName": "Algorithm Cyan",
+        "canonical": "oklch(78% 0.14 205)",
+        "tonalRamp": ["#0a4a55", "#0e6a78", "#138b9c", "#19adc1", "#22d3ee", "#52ddf2", "#82e6f5", "#b1f0f9"]
+      },
+      "studio-light": {
+        "role": "neutral",
+        "displayName": "Studio Light",
+        "canonical": "oklch(98% 0.005 240)",
+        "tonalRamp": ["#1a1f29", "#2a3140", "#3d4658", "#54607a", "#6d7b94", "#94a3b8", "#cbd5e1", "#f8fafc"]
+      },
+      "off-air-muted": {
+        "role": "neutral",
+        "displayName": "Off-Air Muted",
+        "canonical": "oklch(54% 0.04 250)",
+        "tonalRamp": ["#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#e2e8f0", "#f1f5f9"]
+      },
+      "live-signal-green": {
+        "role": "tertiary",
+        "displayName": "Live Signal Green",
+        "canonical": "oklch(72% 0.2 145)",
+        "tonalRamp": ["#0d3b1a", "#155d29", "#1d7f39", "#26a049", "#22c55e", "#4dd87d", "#7ce69e", "#b0f0c1"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display Serif Italic", "purpose": "Hero headline exclusivo. Cormorant Garamond italic 300 sobre vídeo." },
+      "headline": { "displayName": "Section Headline", "purpose": "Títulos de seção, portfólio bento names, quotes de testimonial." },
+      "title": { "displayName": "Sans Title", "purpose": "Cards densos onde sans-serif vence por hierarquia (services, planos)." },
+      "body": { "displayName": "Body Copy", "purpose": "Parágrafos, descrições, hero subtitle." },
+      "label": { "displayName": "Mono Kicker", "purpose": "Kickers tracked uppercase. Voz técnica/broadcast. Masthead, .lbl, hero-credits, nav, CTA-edit." },
+      "caption": { "displayName": "Mono Micro-Caption", "purpose": "Metadados em portfólio e cards. Menor escala mono possível." }
+    },
+    "shadows": [
+      { "name": "glow-small", "value": "0 0 20px rgba(139,92,246,.22)", "purpose": "Halo sutil — hover de .glass-h e default de service cards featured." },
+      { "name": "glow-medium", "value": "0 0 40px rgba(139,92,246,.32)", "purpose": "Destaque em componentes featured/active." },
+      { "name": "glow-large", "value": "0 0 80px rgba(139,92,246,.42)", "purpose": "Hero-tier emphasis. Uso raro." },
+      { "name": "cta-glow", "value": "0 0 30px rgba(168,85,247,.4)", "purpose": "Default do .btn-glow — halo de néon de palco." },
+      { "name": "cta-glow-hover", "value": "0 0 50px rgba(168,85,247,.6)", "purpose": "Hover state do .btn-glow." },
+      { "name": "headline-shadow", "value": "0 4px 28px rgba(0,0,0,.85), 0 1px 2px rgba(0,0,0,.7)", "purpose": "Text-shadow funcional pra legibilidade de headlines sobre vídeo." }
+    ],
+    "motion": [
+      { "name": "ease-cinematic", "value": "cubic-bezier(.22,1,.36,1)", "purpose": "Curva expo-out usada em hover de portfólio bento (transform, filter)." },
+      { "name": "ease-standard", "value": "ease", "purpose": "Transições simples de cor, opacity, border (.glass-h, nav-lnk)." },
+      { "name": "video-drift", "value": "24s ease-in-out infinite alternate", "purpose": "Animação do hero-bg-video — drift sutil 1.04 ↔ 1.1 scale, dá vida cinemática." },
+      { "name": "live-pulse", "value": "2s ease-in-out infinite", "purpose": "Pulso do .mh-dot e .live-dot — opacity + scale entre full e .4/.65." },
+      { "name": "credits-marquee", "value": "28s linear infinite", "purpose": "Scroll horizontal da hero-credits strip." },
+      { "name": "ticker-marquee", "value": "36s linear infinite", "purpose": "Scroll horizontal do ticker geral." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "520px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "900px" },
+      { "name": "xl", "value": "1260px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Glow Button",
+      "kind": "button",
+      "refersTo": "button-glow",
+      "description": "CTA principal — pill com fundo gradient violeta→magenta→ciano e halo glow violeta. Máximo um por fold.",
+      "html": "<a href=\"#\" class=\"ds-btn-glow\">Falar com a M2W →</a>",
+      "css": ".ds-btn-glow { display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #d946ef 0%, #8b5cf6 48%, #22d3ee 100%); color: #fff; font-family: 'DM Sans', system-ui, sans-serif; font-size: 0.875rem; font-weight: 700; padding: 0.875rem 2rem; border: none; border-radius: 999px; box-shadow: 0 0 30px rgba(168,85,247,.4); cursor: pointer; text-decoration: none; transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s; } .ds-btn-glow:hover { opacity: 0.87; transform: translateY(-2px); box-shadow: 0 0 50px rgba(168,85,247,.6); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "CTA secundário — pill com fundo glass + border sutil. Hover tinge violeta. Sempre ao lado do .btn-glow, nunca isolado como primário.",
+      "html": "<a href=\"#\" class=\"ds-btn-out\">Ver portfólio</a>",
+      "css": ".ds-btn-out { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,.05); color: #f8fafc; font-family: 'DM Sans', system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; padding: 0.875rem 2rem; border: 1px solid rgba(255,255,255,.08); border-radius: 999px; cursor: pointer; text-decoration: none; transition: border-color 0.25s, color 0.25s, background 0.25s; } .ds-btn-out:hover { border-color: rgba(168,85,247,.5); color: #8b5cf6; background: rgba(168,85,247,.06); }"
+    },
+    {
+      "name": "Editorial Link CTA",
+      "kind": "button",
+      "refersTo": "cta-edit",
+      "description": "CTA editorial mono com underline e arrow translate — voz quieta, usada em sub-actions de seção/portfólio.",
+      "html": "<a href=\"#\" class=\"ds-cta-edit\">Ver case completo</a>",
+      "css": ".ds-cta-edit { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: #f8fafc; text-decoration: none; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,.5); transition: all 0.3s; display: inline-flex; align-items: center; gap: 0.6rem; } .ds-cta-edit::after { content: '→'; transition: transform 0.3s; } .ds-cta-edit:hover { border-bottom-color: rgba(255,255,255,.9); color: #fff; } .ds-cta-edit:hover::after { transform: translateX(5px); }"
+    },
+    {
+      "name": "Mono Kicker Label",
+      "kind": "custom",
+      "refersTo": "label",
+      "description": "Label tracked uppercase em violeta — kicker acima de seções. A voz técnica do sistema.",
+      "html": "<span class=\"ds-lbl\">// Capítulo 02 — Como Funciona</span>",
+      "css": ".ds-lbl { display: inline-block; font-family: 'DM Sans', system-ui, sans-serif; font-size: 0.62rem; font-weight: 400; letter-spacing: 0.45em; text-transform: uppercase; color: #8b5cf6; }"
+    },
+    {
+      "name": "Tech Chip",
+      "kind": "chip",
+      "refersTo": "tech-chip",
+      "description": "Pill violeta translúcido pra stack tags e plano badges.",
+      "html": "<span class=\"ds-tech-chip\">ComfyUI</span>",
+      "css": ".ds-tech-chip { display: inline-block; font-family: 'DM Sans', system-ui, sans-serif; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.38rem 0.85rem; border-radius: 999px; background: rgba(168,85,247,.09); border: 1px solid rgba(168,85,247,.25); color: #8b5cf6; }"
+    },
+    {
+      "name": "Glass Card with Hover",
+      "kind": "card",
+      "refersTo": "glass-card",
+      "description": "Container vidro com backdrop-blur. Hover ganha glow violeta e border tingida. Usado sobre vídeo ou em cards interativos.",
+      "html": "<div class=\"ds-glass ds-glass-h\"><h3 style=\"font-family:'DM Sans',sans-serif;font-weight:700;font-size:1.15rem;color:#f8fafc;margin:0 0 0.5rem;\">TikTok Shop & Live Commerce</h3><p style=\"font-family:'DM Sans',sans-serif;font-size:0.85rem;line-height:1.7;color:#64748b;margin:0;\">Avatar de IA fazendo live 24/7, integrado ao seu catálogo.</p></div>",
+      "css": ".ds-glass { background: rgba(255,255,255,0.04); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 1.75rem; transition: border-color 0.3s, box-shadow 0.3s; } .ds-glass-h:hover { border-color: rgba(168,85,247,.35); box-shadow: 0 0 20px rgba(139,92,246,.22); }"
+    },
+    {
+      "name": "Bento Portfolio Card",
+      "kind": "card",
+      "refersTo": "bento-card",
+      "description": "Card de portfólio com mídia full-bleed, halftone overlay, gradient bottom-to-top e info editorial (mono tag + Cormorant italic name).",
+      "html": "<div class=\"ds-pb-card\"><div class=\"ds-pb-media-ph\"></div><div class=\"ds-pb-halftone\"></div><div class=\"ds-pb-grad\"></div><div class=\"ds-pb-info\"><span class=\"ds-pb-tag\">Case TikTok Shop</span><div class=\"ds-pb-name\">Mia Park</div><div class=\"ds-pb-niche\">Beleza · 2.4M alcance</div></div></div>",
+      "css": ".ds-pb-card { position: relative; overflow: hidden; border-radius: 18px; background: #0e0e1f; border: 1px solid rgba(255,255,255,.07); transition: transform 0.5s cubic-bezier(.22,1,.36,1), border-color 0.35s; width: 100%; aspect-ratio: 9/14; cursor: pointer; } .ds-pb-card:hover { transform: translateY(-5px); border-color: rgba(168,85,247,.28); } .ds-pb-media-ph { position: absolute; inset: 0; background: linear-gradient(135deg, #1a1a3a 0%, #2a1454 50%, #4a1454 100%); } .ds-pb-halftone { position: absolute; inset: 0; background-image: radial-gradient(circle, rgba(0,0,0,.55) 1px, transparent 1px); background-size: 4px 4px; opacity: 0.14; mix-blend-mode: multiply; pointer-events: none; z-index: 1; } .ds-pb-grad { position: absolute; inset: 0; background: linear-gradient(to top, rgba(5,5,8,.97) 0%, rgba(5,5,8,.5) 36%, rgba(5,5,8,.12) 62%, transparent 85%); pointer-events: none; z-index: 2; } .ds-pb-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 1.5rem 1.75rem 1.75rem; z-index: 4; } .ds-pb-tag { display: inline-flex; align-items: center; gap: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.5rem; font-weight: 500; letter-spacing: 0.28em; text-transform: uppercase; color: rgba(255,255,255,.6); margin-bottom: 0.6rem; } .ds-pb-tag::before { content: ''; width: 16px; height: 1px; background: rgba(255,255,255,.38); } .ds-pb-name { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 300; font-style: italic; font-size: 2.15rem; line-height: 1.05; color: #fff; letter-spacing: -0.01em; margin-bottom: 0.35rem; } .ds-pb-niche { font-family: 'JetBrains Mono', monospace; font-size: 0.5rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,.42); }"
+    },
+    {
+      "name": "Magazine Masthead",
+      "kind": "nav",
+      "refersTo": "masthead",
+      "description": "Strip mono uppercase tracked com pulso LIVE green. Assinatura editorial-cinemática acima do hero.",
+      "html": "<div class=\"ds-masthead\"><span class=\"ds-mh-mid\"><span class=\"ds-mh-dot\"></span> No ar · 5 anos rodando IA</span></div>",
+      "css": ".ds-masthead { display: flex; justify-content: center; align-items: center; padding: 1rem 2.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 500; letter-spacing: 0.28em; text-transform: uppercase; color: rgba(255,255,255,.78); text-shadow: 0 1px 8px rgba(0,0,0,.9); background: #06060e; } .ds-mh-mid { display: flex; align-items: center; gap: 0.65rem; } .ds-mh-dot { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; animation: ds-pls 2s ease-in-out infinite; box-shadow: 0 0 8px rgba(34,197,94,.6); } @keyframes ds-pls { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.65); } }"
+    },
+    {
+      "name": "Nav Link",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Link de navegação em DM Sans 500, muted default, vira studio-light no hover. Hidden em mobile.",
+      "html": "<a href=\"#\" class=\"ds-nav-lnk\">Como funciona</a>",
+      "css": ".ds-nav-lnk { font-family: 'DM Sans', system-ui, sans-serif; font-size: 0.8rem; font-weight: 500; color: #64748b; text-decoration: none; background: none; border: none; cursor: pointer; transition: color 0.2s; } .ds-nav-lnk:hover { color: #f8fafc; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Trailer de A24 vendendo IA",
+    "overview": "A landing M2W é uma peça cinematográfica de captação. Vídeo full-bleed sustenta o hero; sobre ele, tipografia editorial em Cormorant Garamond italic 300 desce sem pedir licença, como overlay de trailer. Metadados técnicos vivem em JetBrains Mono all-caps com tracking de 0.22–0.28em — assinatura de masthead de revista cruzada com cabeçalho de console. O fundo é noite profunda (#06060e), e violeta-magenta-ciano operam como luz de monitor refletida no escuro, nunca como decoração de fundo. A página não é institucional, não é tech-SaaS, não é portfólio passivo: é máquina de captação que se comporta como produto-arte. Este sistema rejeita explicitamente o que PRODUCT.md marca como tóxico: agência digital BR genérica de Pinheiros, AI-slop saturado, SaaS gringa cream-light, urgência manufaturada. A urgência aqui vem da matemática (R$5k vs R$50k, 48h vs 6 semanas) e do peso visual do hero. A escolha de Cormorant Garamond + DM Sans aparece em listas de reflexo-de-IA — aqui são identidade já comprometida, não greenfield.",
+    "keyCharacteristics": [
+      "Tela cinemática escura: #06060e como canvas, vídeo como protagonista",
+      "Tipografia bipolar: serif italic 300 (emoção) + mono tracked all-caps (autoridade técnica)",
+      "Acentos em gradiente violeta→magenta→ciano usados como luz, nunca como fundo",
+      "Glass-and-glow como afordância de hover/destaque, não como wallpaper",
+      "Composição editorial bottom-left, não centered-stack"
+    ],
+    "rules": [
+      { "name": "The Color-as-Light Rule", "body": "Violeta, magenta e ciano se comportam como luz sobre o escuro, nunca como superfície. Nada de bloco grande violeta como fundo de seção. Block violeta >10% da viewport = parou de ser M2W.", "section": "colors" },
+      { "name": "The Gradient Restraint Rule", "body": "O gradient #d946ef → #8b5cf6 → #22d3ee é assinatura — mas só sobre .btn-glow, em underlines de hover, e em .grd-t para no máximo uma headline curta por seção. Múltiplas headlines em gradient = AI-slop.", "section": "colors" },
+      { "name": "The LIVE Green Rule", "body": "#22c55e existe APENAS no .mh-dot do masthead e em indicadores de transmissão real-time. Nunca em CTAs, success states, ou texto.", "section": "colors" },
+      { "name": "The Italic-300 Rule", "body": "Cormorant Garamond só aparece em italic, weight 300 ou 400 italic. Roman e weights ≥500 estão fora do sistema. Italic é a voz emocional.", "section": "typography" },
+      { "name": "The Mono-Tracking Rule", "body": "JetBrains Mono sempre com letter-spacing ≥0.2em e text-transform uppercase. Mono em sentence case quebra o registro de metadata broadcast.", "section": "typography" },
+      { "name": "The One Voice Per Block Rule", "body": "Display, Label e Body podem coexistir em um bloco, mas no máximo dois em uma linha visual. Três fontes empilhadas = ruído.", "section": "typography" },
+      { "name": "The Glass-with-Purpose Rule", "body": "backdrop-filter blur(20px) saturate(160%) aplica-se a um card SOMENTE quando coexiste sobre vídeo/imagem viva ou é superfície interativa com hover. Glass decorativo = glassmorphism banido.", "section": "elevation" },
+      { "name": "The Glow-as-State Rule", "body": "Glow violeta aparece em três contextos: default em CTAs primários, hover em .glass-h, marcador featured em planos/services. Glow em elemento estático sem função semântica = ruído.", "section": "elevation" },
+      { "name": "The No-Black-Shadow Rule", "body": "Sombras pretas tradicionais (rgba(0,0,0,n) com blur<20px e offset>0) proibidas em surfaces. Único uso permitido: text-shadow funcional para legibilidade sobre vídeo.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do usar Cormorant Garamond só em italic weight 300 (ou 400 italic). Roman é regressão imediata.",
+      "Do envolver headlines de hero sobre vídeo com text-shadow: 0 4px 28px rgba(0,0,0,.85), 0 1px 2px rgba(0,0,0,.7) — legibilidade não é opcional.",
+      "Do tratar a paleta violeta-magenta-ciano como luz refletida, não superfície. Block violeta >10% da viewport = parou de ser M2W.",
+      "Do usar masthead mono uppercase tracked como assinatura de seção/página — só .lbl em DM Sans é aceitável como label alternativo.",
+      "Do respeitar prefers-reduced-motion: reduce em todos os keyframes do hero (videoDrift, pls, credMarq) — requisito do PRODUCT.md, não nice-to-have.",
+      "Do preservar a composição editorial bottom-left no hero. Centered-stack com icon-title-subtitle é template SaaS.",
+      "Do manter contraste WCAG AA mínimo em CTAs e copy sobre fundo escuro."
+    ],
+    "donts": [
+      "Don't expandir grd-t (gradient text) para mais de uma headline curta por seção. Múltiplas headlines em gradient = AI-slop SaaS.",
+      "Don't aplicar .glass como wallpaper em seções com fundo sólido escuro. Glass é afordância, não decoração.",
+      "Don't introduzir sombras pretas tradicionais (0 4px 8px rgba(0,0,0,0.1)) em superfícies. Quebra a doutrina camadas-luminosas.",
+      "Don't usar #000 ou #fff puros. Sempre tintar para o sistema (Deep Render Black #06060e, Studio Light #f8fafc).",
+      "Don't desenhar grids de cards idênticos com ícone+heading+texto. Anti-reference AI-slop do PRODUCT.md.",
+      "Don't desenhar hero-metric template (número gigante + label + 3 stats). Cair no template SaaS.",
+      "Don't usar mockup de iPhone flutuante com sombra azul. Anti-reference: agência BR genérica de Pinheiros.",
+      "Don't introduzir bege/cream backgrounds ou serif neutra (Fraunces, Newsreader, Lora). Anti-reference: SaaS gringa cream-light cliché.",
+      "Don't adicionar countdown timers de 24h ou últimas N vagas popups. Anti-reference: urgência fake.",
+      "Don't usar border-left ou border-right >1px como faixa colorida de destaque em cards/alerts. Absolute ban.",
+      "Don't introduzir emojis decorativos em headlines ou CTAs. Anti-reference: agência de criador PJ.",
+      "Don't usar mono em sentence case ou sem tracking. Quebra a Mono-Tracking Rule."
+    ]
+  }
+}
