@@ -1500,6 +1500,10 @@ const I18N = {
     'calc.gateBtn':'Gerar meu Audit →',
     'calc.gateMicro':'Sem spam · sem cobrança · audit chega em < 24h',
     'calc.successTtl':'Audit em produção.','calc.successSub':'Nossa IA está analisando seu caso. Você recebe o diagnóstico no email em menos de 24h. Cheque caixa de entrada e spam.',
+    'chat.pillText':'Como podemos ajudar?',
+    'chat.welcome':'Oi! Sou a **Mia**, consultora da M2W. ✨\n\nMe conta: qual é o maior desafio hoje com conteúdo, vendas ou IA pra sua marca?',
+    'chat.tags':['Gasto muito com influencers','Quero vender no TikTok Shop','Não consigo escalar conteúdo','Como funciona a IA?','Ver preços','Falar com Silvio'],
+    'chat.tagCallTrigger':'Falar com Silvio',
     'meta.title':'M2W · Influencers Digitais de IA para TikTok Shop, Ecommerce e Marcas | Brasília',
     'meta.desc':'Crie influencers digitais de IA que vendem 24/7 no TikTok Shop e Ecommerce. Setup em 48h, ROI garantido em contrato e 90% mais barato que micro-influencer humano. Atendemos marcas em todo o Brasil.',
   },
@@ -1629,6 +1633,10 @@ const I18N = {
     'calc.gateBtn':'Get my Audit →',
     'calc.gateMicro':'No spam · no charge · audit arrives in < 24h',
     'calc.successTtl':'Audit in production.','calc.successSub':'Our AI is analyzing your case. You\'ll get the diagnosis by email in less than 24h. Check inbox and spam.',
+    'chat.pillText':'How can we help?',
+    'chat.welcome':'Hi! I\'m **Mia**, M2W\'s consultant. ✨\n\nTell me: what\'s your biggest challenge today with content, sales or AI for your brand?',
+    'chat.tags':['Spending too much on influencers','Want to sell on TikTok Shop','Can\'t scale content','How does the AI work?','See pricing','Talk to Silvio'],
+    'chat.tagCallTrigger':'Talk to Silvio',
     'meta.title':'M2W · AI Digital Influencers for TikTok Shop, Ecommerce & Brands',
     'meta.desc':'AI digital influencers that sell 24/7 on TikTok Shop and Ecommerce. 48h setup, ROI guaranteed in writing, 90% cheaper than a human micro-influencer. Serving brands worldwide from Brasília.',
   },
@@ -1758,6 +1766,10 @@ const I18N = {
     'calc.gateBtn':'Generar mi Audit →',
     'calc.gateMicro':'Sin spam · sin cobro · audit llega en < 24h',
     'calc.successTtl':'Audit en producción.','calc.successSub':'Nuestra IA está analizando tu caso. Recibirás el diagnóstico por email en menos de 24h. Revisa bandeja y spam.',
+    'chat.pillText':'¿Cómo podemos ayudar?',
+    'chat.welcome':'¡Hola! Soy **Mia**, consultora de M2W. ✨\n\nCuéntame: ¿cuál es tu mayor desafío hoy con contenido, ventas o IA para tu marca?',
+    'chat.tags':['Gasto mucho con influencers','Quiero vender en TikTok Shop','No logro escalar contenido','¿Cómo funciona la IA?','Ver precios','Hablar con Silvio'],
+    'chat.tagCallTrigger':'Hablar con Silvio',
     'meta.title':'M2W · Influencers Digitales de IA para TikTok Shop, Ecommerce y Marcas',
     'meta.desc':'Influencers digitales de IA que venden 24/7 en TikTok Shop y Ecommerce. Setup en 48h, ROI garantizado por contrato y 90% más barato que un micro-influencer humano. Atendemos marcas en LATAM.',
   },
@@ -3208,31 +3220,34 @@ document.querySelectorAll('.reveal').forEach((el,i)=>{
   var sending    = false;
   var pendingImg = null; // {dataUrl, mimeType}
 
-  // \u2500\u2500 Trilingual pill cycling \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-  var pillTexts  = ['Como podemos ajudar?','How can we help?','\u00BFC\u00F3mo podemos ayudar?'];
-  var pillIdx    = 0;
+  // \u2500\u2500 Pill text + welcome + tags \u00B7 seguem idioma selecionado no i18n switcher \u2500\u2500
   var pillTextEl = document.getElementById('pill-text');
-  setInterval(function(){
-    pillTextEl.style.opacity   = '0';
-    pillTextEl.style.transform = 'translateY(-3px)';
-    setTimeout(function(){
-      pillIdx = (pillIdx + 1) % pillTexts.length;
-      pillTextEl.textContent     = pillTexts[pillIdx];
-      pillTextEl.style.opacity   = '1';
-      pillTextEl.style.transform = 'translateY(0)';
-    }, 300);
-  }, 3200);
 
-  // \u2500\u2500 Strings \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-  var WELCOME = 'Ol\u00E1! Sou a **Mia**, consultora de IA da M2W. \uD83C\uDDE7\uD83C\uDDF7\n*Hello! I\'m Mia, M2W\'s AI consultant.* \uD83C\uDDFA\uD83C\uDDF8\n*\u00A1Hola! Soy Mia, consultora de IA de M2W.* \uD83C\uDDEA\uD83C\uDDF8\n\nPodemos conversar em **portugu\u00EAs**, **ingl\u00EAs** ou **espanhol** \u2014 voc\u00EA escolhe!\n\nMe conta: qual \u00E9 o seu maior desafio hoje com conte\u00FAdo ou vendas?';
-  var TAGS = [
-    'Gasto muito com influencers',
-    'Quero vender no TikTok Shop',
-    'N\u00E3o consigo escalar conte\u00FAdo',
-    'Como funciona a IA?',
-    'Ver pre\u00E7os',
-    'Falar com Silvio'
-  ];
+  function refreshPillText(){
+    /* T() vem do bloco i18n; se i18n nao carregou ainda, fallback PT */
+    var t = (typeof T === 'function') ? T('chat.pillText') : 'Como podemos ajudar?';
+    if (pillTextEl) pillTextEl.textContent = t;
+  }
+  refreshPillText();
+
+  /* Hook no language switcher: re-aplica pill + tags quando trocar idioma */
+  var __prevRebuild = window.__rebuildDynamic;
+  window.__rebuildDynamic = function(){
+    if (typeof __prevRebuild === 'function') __prevRebuild();
+    refreshPillText();
+    refreshChatTags();
+  };
+
+  // Welcome + tags \u00B7 sempre via T() pra refletir idioma corrente
+  function getWelcome(){ return (typeof T === 'function') ? T('chat.welcome') : 'Oi! Sou a Mia, consultora da M2W.'; }
+  function getTags(){    return (typeof T === 'function') ? T('chat.tags')    : ['Gasto muito com influencers','Quero vender no TikTok Shop','N\u00E3o consigo escalar conte\u00FAdo','Como funciona a IA?','Ver pre\u00E7os','Falar com Silvio']; }
+  function getCallTrigger(){ return (typeof T === 'function') ? T('chat.tagCallTrigger') : 'Falar com Silvio'; }
+
+  /* Reaplica tags se o chat ja estiver aberto e o idioma mudar */
+  function refreshChatTags(){
+    var existing = document.querySelector('#m2w-chat-msgs .chat-tags');
+    if (existing) { existing.remove(); addTags(); }
+  }
 
   // \u2500\u2500 Calendly \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   var CALENDLY_URL = 'https://calendly.com/silviofilhosf/nova-reuniao';
@@ -3398,11 +3413,13 @@ document.querySelectorAll('.reveal').forEach((el,i)=>{
 
   function addTags(){
     var row=document.createElement('div'); row.className='chat-tags';
-    TAGS.forEach(function(label){
+    var tags = getTags();
+    var callTrigger = getCallTrigger();
+    tags.forEach(function(label){
       var b=document.createElement('button'); b.className='chat-tag'; b.textContent=label;
       b.onclick=function(){
         row.remove();
-        if(label==='Falar com Silvio'){ addCalendlyEmbed(); }
+        if(label===callTrigger){ addCalendlyEmbed(); }
         else{ submitMsg(label); }
       };
       row.appendChild(b);
@@ -3460,8 +3477,9 @@ document.querySelectorAll('.reveal').forEach((el,i)=>{
     pill.style.display = openState?'none':'flex';
     pill.setAttribute('aria-expanded', String(openState));
     if(openState && history.length===0){
-      addMsg(WELCOME,'bot');
-      history.push({role:'assistant',content:WELCOME});
+      var welcome = getWelcome();
+      addMsg(welcome,'bot');
+      history.push({role:'assistant',content:welcome});
       setTimeout(addTags,280);
       setTimeout(function(){ input.focus(); },380);
     }

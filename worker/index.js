@@ -20,7 +20,34 @@ const GROQ_MODEL = 'llama-3.3-70b-versatile';
 const OWNER_EMAIL = 'comercial@m2w-ai.com';
 
 // Custom attributes to auto-create on cold start (Brevo ignores 400 if already exists)
-const CUSTOM_ATTRS = ['PLATAFORMA', 'BUDGET', 'SETOR', 'VOLUME_ATUAL', 'SITE_URL', 'REDES_SOCIAIS', 'REFERENCIAS'];
+const CUSTOM_ATTRS = ['PLATAFORMA', 'BUDGET', 'SETOR', 'VOLUME_ATUAL', 'SITE_URL', 'REDES_SOCIAIS', 'REFERENCIAS', 'LEAD_TIER', 'LEAD_SOURCE'];
+
+/* Lead tier classification: roteia tipo de email + prioridade comercial.
+ *   quente: calculadora completa, ticket >= R$100, volume >= 30 posts/mes — recebe Audit M2W via Llama
+ *   morno : form padrao com site/whatsapp/empresa preenchidos, ou chat com score >= medio — recebe welcome + deck PDF
+ *   frio  : minimo (so nome+email), source desconhecido — recebe welcome basico apenas
+ */
+function classifyLeadTier(lead) {
+  const calc = lead.calc || {};
+  const score = (lead.score || '').toLowerCase();
+
+  if (lead.source === 'audit') {
+    const ticket = Number(calc.ticket_medio) || 0;
+    const vol    = Number(calc.volume_posts_mes) || 0;
+    if (ticket >= 100 && vol >= 30) return 'quente';
+    if (ticket >= 50  || vol >= 30) return 'morno';
+    return 'morno'; /* qualquer audit submit ja e morno minimo */
+  }
+
+  if (score === 'alto')  return 'quente';
+  if (score === 'medio') return 'morno';
+
+  /* Form padrao: classifica por riqueza dos dados */
+  const richness = [lead.empresa, lead.whatsapp, lead.site, lead.redes, lead.servico]
+    .filter(v => v && String(v).trim()).length;
+  if (richness >= 3) return 'morno';
+  return 'frio';
+}
 let attrsReady = false;
 async function ensureAttributes(key) {
   if (attrsReady) return;
@@ -184,11 +211,27 @@ function ctaSolid(text, href) {
 </table>`;
 }
 
-function buildWelcomeHtml(first, servico, perfil) {
+function buildWelcomeHtml(first, servico, perfil, tier = 'morno') {
   const f = htmlEscape(first);
   const s = htmlEscape(servico && servico !== 'Chat M2W' ? servico : '');
   const p = htmlEscape(perfil);
   const subj = `Re: ${first}, M2W`;
+
+  /* Bloco extra de deck PDF + cases pra leads morno/frio
+   * (quente recebe Audit Llama personalizado, nao precisa) */
+  const deckBlock = tier !== 'quente' ? `
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 32px;">
+      <tr><td style="border:1px solid ${MAIL_GOLD};border-radius:4px;padding:24px 28px;">
+        <p style="margin:0 0 8px;font-size:9px;font-weight:400;letter-spacing:5px;text-transform:uppercase;color:${MAIL_GOLD};font-family:${MAIL_FONT_M};">Material completo</p>
+        <p style="margin:0 0 16px;font-size:14px;font-weight:400;line-height:1.7;color:${MAIL_BODY};">Enquanto eu preparo seu contato, da uma olhada no deck M2W: cases reais (Mia Park, Luna Chen, Sofia Reyes), comparativo de custo vs influencer humano, e a tecnologia que esta por tras (LTX-2.3, Higgsfield, ComfyUI).</p>
+        <table cellpadding="0" cellspacing="0" border="0">
+          <tr><td style="border:1px solid ${MAIL_GOLD};">
+            <a href="https://m2w-ai.com/public/m2w-deck.pdf" style="display:block;padding:13px 28px;font-family:${MAIL_FONT_M};font-size:10px;font-weight:400;letter-spacing:4px;text-transform:uppercase;color:${MAIL_GOLD};text-decoration:none;white-space:nowrap;">Baixar deck completo &nbsp;&rarr;</a>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>` : '';
+
   const content = `
     <h1 class="hl" style="margin:0 0 32px;font-family:${MAIL_FONT_D};font-size:46px;font-weight:400;font-style:italic;line-height:1.08;color:${MAIL_INK};letter-spacing:-0.025em;">${f}.</h1>
     <p style="margin:0 0 20px;font-size:15px;font-weight:400;line-height:1.80;color:${MAIL_BODY};">Acabei de ver sua solicita&ccedil;&atilde;o. N&atilde;o &eacute; autoresposta: sou eu, Silvio, lendo cada pedido antes de responder.</p>
@@ -199,6 +242,7 @@ function buildWelcomeHtml(first, servico, perfil) {
     ${pullQuote('&ldquo;Qual &eacute; o custo real, em tempo, dinheiro e oportunidade perdida, do conte&uacute;do que voc&ecirc; produz hoje?&rdquo;')}
     <p style="margin:0 0 36px;font-size:15px;font-weight:400;line-height:1.80;color:${MAIL_BODY};">Responde aqui neste e-mail. Duas linhas mudam completamente o que vou preparar para a nossa conversa.</p>
     ${ctaOutline('Responder agora', mailtoHref(subj))}
+    ${deckBlock}
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 40px;"><tr><td style="height:1px;background:${MAIL_RULE};">&nbsp;</td></tr></table>
     <p style="margin:0 0 28px;font-size:9px;font-weight:400;letter-spacing:5px;text-transform:uppercase;color:${MAIL_QUIET};font-family:${MAIL_FONT_M};">O que entregamos</p>
     <table class="stats" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 44px;">
@@ -363,6 +407,13 @@ export default {
     let dealId    = null;
     let contactError = null;
 
+    /* Classifica tier do lead (quente/morno/frio) — roteia email + prioridade CRM */
+    const leadTier = classifyLeadTier({
+      source: body.source || (body.servico === 'Chat M2W' ? 'chat' : 'form'),
+      score, empresa, whatsapp, site, redes, servico, calc: body.calc,
+    });
+    const leadSource = body.source || (body.servico === 'Chat M2W' ? 'chat' : 'form');
+
     /* ── 1. Criar / atualizar contato ── */
     try {
       const res = await brevoPost(key, '/contacts', {
@@ -374,6 +425,7 @@ export default {
           PLATAFORMA: plataforma, BUDGET: budget,
           SETOR: setor, VOLUME_ATUAL: volume_atual,
           SITE_URL: site, REDES_SOCIAIS: redes, REFERENCIAS: referencias,
+          LEAD_TIER: leadTier, LEAD_SOURCE: leadSource,
         },
         listIds: [LIST_ID],
         updateEnabled: true,
@@ -402,10 +454,12 @@ export default {
 
     /* ── 2. Criar deal ── */
     try {
-      const dealName = `Lead M2W · ${nome}${servico ? ' · ' + servico : ''}`;
+      const tierTag = leadTier === 'quente' ? '🔥' : leadTier === 'morno' ? '🌡️' : '❄️';
+      const dealName = `${tierTag} ${nome}${servico ? ' · ' + servico : ''}`;
       /* sempre incluir contato no topo da descricao para garantir que vendedor
        * encontre o lead mesmo se o contato Brevo nao tiver sido criado */
       const descParts = [
+        `Tier: ${leadTier.toUpperCase()} | Source: ${leadSource}`,
         `Nome: ${nome}`,
         `Email: ${email}`,
         whatsapp     && `WhatsApp: ${whatsapp}`,
@@ -498,28 +552,31 @@ export default {
     const emailTo  = [{ email, name: nome }];
     const ccSilvio = [{ email: 'comercial@m2w-ai.com', name: 'Silvio Correia Filho' }];
 
-    /* Brevo transactional API permite scheduledAt ate 72h (3 dias).
-     * D+0 (welcome) sai imediatamente.
-     * D+3 sai agendado nesta mesma chamada (limite da API).
-     * D+7 e D+14 sao despachados por Cron Trigger diario (handler `scheduled` abaixo),
-     * que escaneia deals criados N dias atras e envia.
+    /* Roteamento por tier:
+     *   - quente: Audit Llama (gerado via /audit endpoint, nao via aqui)
+     *   - morno : welcome enriquecido com deck PDF + D+3 follow-up
+     *   - frio  : welcome basico, sem D+3 (so D+7 e D+14 via cron, se sobreviver)
      */
     const sequence = [
       {
         sender,
         to:          emailTo,
         cc:          ccSilvio,
-        subject:     `${first}.`,
-        htmlContent: buildWelcomeHtml(first, servico, perfil),
+        subject:     leadTier === 'morno' ? `${first}, sua proposta M2W` : `${first}.`,
+        htmlContent: buildWelcomeHtml(first, servico, perfil, leadTier),
       },
-      {
+    ];
+
+    /* D+3 follow-up so para morno (frio recebe apenas via cron diario se sobreviver) */
+    if (leadTier === 'morno') {
+      sequence.push({
         sender,
         to:          emailTo,
         subject:     `${first}, deixa eu ser direto`,
         htmlContent: buildFollowHtml3(first, servico),
         scheduledAt: daysFromNow(3),
-      },
-    ];
+      });
+    }
 
     const emailResults = await Promise.allSettled(
       sequence.map(async ({ sender: s, to, cc, subject, htmlContent, scheduledAt }) => {
