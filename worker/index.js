@@ -83,6 +83,12 @@ function daysFromNow(n) {
   return d.toISOString();
 }
 
+/* Brevo transactional API tem limite estrito de 72h para scheduledAt.
+ * Usamos 68h (~2.83 dias) pra ter margem segura mesmo se a request demorar. */
+function hoursFromNow(h) {
+  return new Date(Date.now() + h * 60 * 60 * 1000).toISOString();
+}
+
 // ── Email HTML builders ──────────────────────────────────────────────────────
 // Design editorial portado dos templates standalone em worker/*.html.
 // Hibrido de paleta: deep #06060e como base (igual landing) + gold #C8A97E
@@ -415,21 +421,37 @@ export default {
     const leadSource = body.source || (body.servico === 'Chat M2W' ? 'chat' : 'form');
 
     /* ── 1. Criar / atualizar contato ── */
-    try {
-      const res = await brevoPost(key, '/contacts', {
-        email,
-        attributes: {
-          FIRSTNAME: first, LASTNAME: last,
-          SMS: whatsapp, EMPRESA: empresa,
-          SERVICO: servico, ORIGEM: 'm2w-ai.com',
-          PLATAFORMA: plataforma, BUDGET: budget,
-          SETOR: setor, VOLUME_ATUAL: volume_atual,
-          SITE_URL: site, REDES_SOCIAIS: redes, REFERENCIAS: referencias,
-          LEAD_TIER: leadTier, LEAD_SOURCE: leadSource,
-        },
-        listIds: [LIST_ID],
-        updateEnabled: true,
+    const baseAttrs = {
+      FIRSTNAME: first, LASTNAME: last,
+      EMPRESA: empresa,
+      SERVICO: servico, ORIGEM: 'm2w-ai.com',
+      PLATAFORMA: plataforma, BUDGET: budget,
+      SETOR: setor, VOLUME_ATUAL: volume_atual,
+      SITE_URL: site, REDES_SOCIAIS: redes, REFERENCIAS: referencias,
+      LEAD_TIER: leadTier, LEAD_SOURCE: leadSource,
+    };
+
+    async function tryCreateContact(attrs) {
+      return brevoPost(key, '/contacts', {
+        email, attributes: attrs, listIds: [LIST_ID], updateEnabled: true,
       });
+    }
+
+    try {
+      /* Primeira tentativa: com SMS */
+      let res = await tryCreateContact({ ...baseAttrs, SMS: whatsapp });
+
+      /* Brevo trata SMS como identificador unico. Se outro contato ja tem o
+       * mesmo numero, ele recusa o upsert inteiro. Retry sem SMS. */
+      if (res.status === 400) {
+        const errText = await res.text();
+        if (/SMS/i.test(errText) && /duplicate/i.test(errText)) {
+          console.log('SMS duplicate; retry sem SMS');
+          res = await tryCreateContact(baseAttrs);
+        } else {
+          contactError = `contact-post 400: ${errText.slice(0, 240)}`;
+        }
+      }
 
       if (res.status === 201) {
         contactId = (await res.json()).id ?? null;
@@ -443,7 +465,7 @@ export default {
           contactError = `contact-get ${r.status}: ${(await r.text()).slice(0, 240)}`;
           console.error('contact-get error', contactError);
         }
-      } else {
+      } else if (!contactError) {
         contactError = `contact-post ${res.status}: ${(await res.text()).slice(0, 240)}`;
         console.error('contact error', contactError);
       }
@@ -567,14 +589,15 @@ export default {
       },
     ];
 
-    /* D+3 follow-up so para morno (frio recebe apenas via cron diario se sobreviver) */
+    /* D+3 follow-up so para morno (frio recebe apenas via cron diario se sobreviver).
+     * Brevo scheduledAt tem limite estrito 72h — usamos 68h pra ter margem. */
     if (leadTier === 'morno') {
       sequence.push({
         sender,
         to:          emailTo,
         subject:     `${first}, deixa eu ser direto`,
         htmlContent: buildFollowHtml3(first, servico),
-        scheduledAt: daysFromNow(3),
+        scheduledAt: hoursFromNow(68),
       });
     }
 
