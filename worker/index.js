@@ -1216,8 +1216,12 @@ function buildDeckHtml({ nome, servico, lang }) {
   --mono:'JetBrains Mono',monospace;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{background:var(--deep);color:var(--txt);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+html,body{background:var(--deep);color:var(--txt);font-family:var(--sans);-webkit-font-smoothing:antialiased;
+  /* Force backgrounds + colors no Cmd+P (Chrome/Safari/Edge) */
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
 @page{size:297mm 210mm;margin:0}
+/* Garante que cada slide tambem mantem cores no print */
+.slide,.slide *{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
 
 /* Slide base: A4 landscape exact */
 .slide{
@@ -1446,9 +1450,24 @@ table.cmp td.hi{color:var(--pg);font-weight:500}
       <div class="persona-niche">K-Beauty<br>Lifestyle<br>Live Commerce</div>
       <div style="margin-top:4mm;padding-top:3mm;border-top:1px solid var(--rule)"><div class="mono" style="color:var(--pg);font-size:7pt">8.3% conv · 450% growth</div></div>
     </div>
-    <div class="persona"><div class="persona-tag">FASHION & LIFESTYLE</div><div class="persona-name">Luna Chen</div><div class="persona-niche">Moda<br>Tendências<br>Estilo de Vida</div></div>
-    <div class="persona"><div class="persona-tag">FITNESS & WELLNESS</div><div class="persona-name">Kai Santos</div><div class="persona-niche">Treino<br>Nutrição<br>Performance</div></div>
-    <div class="persona"><div class="persona-tag">BEAUTY & SKINCARE</div><div class="persona-name">Sofia Reyes</div><div class="persona-niche">Skincare<br>Bem-estar<br>Review</div></div>
+    <div class="persona" style="padding-top:0;overflow:hidden">
+      <div class="persona-thumb" style="background-image:url('https://m2w-ai.com/public/portfolio/luna-chen-hero.jpg');background-position:center 20%"></div>
+      <div class="persona-tag">FASHION & LIFESTYLE</div>
+      <div class="persona-name">Luna Chen</div>
+      <div class="persona-niche">Moda<br>Tendências<br>Estilo de Vida</div>
+    </div>
+    <div class="persona" style="padding-top:0;overflow:hidden">
+      <div class="persona-thumb" style="background-image:url('https://m2w-ai.com/public/portfolio/kai-santos-thumb.jpg');background-position:center 28%"></div>
+      <div class="persona-tag">FITNESS & WELLNESS</div>
+      <div class="persona-name">Kai Santos</div>
+      <div class="persona-niche">Treino<br>Nutrição<br>Performance</div>
+    </div>
+    <div class="persona" style="padding-top:0;overflow:hidden">
+      <div class="persona-thumb" style="background-image:url('https://m2w-ai.com/public/portfolio/sofia-reyes-thumb.jpg');background-position:center 25%"></div>
+      <div class="persona-tag">BEAUTY & SKINCARE</div>
+      <div class="persona-name">Sofia Reyes</div>
+      <div class="persona-niche">Skincare<br>Bem-estar<br>Review</div>
+    </div>
   </div>
   <p class="mono" style="margin-top:6mm;color:var(--muted);font-size:7.5pt;text-align:center">4 personas ativas no portfolio · avatar exclusivo desenvolvido em até 14 dias</p>
 </section>
