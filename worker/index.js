@@ -135,7 +135,7 @@ function emailShell(preheader, eyebrow, content, opts = {}) {
 }
 </style>
 </head>
-<body style="margin:0;padding:0;background:${MAIL_DEEP};font-family:${MAIL_FONT_S};">
+<body style="margin:0;padding:0;background:${MAIL_DEEP};color:${MAIL_BODY};font-family:${MAIL_FONT_S};">
 <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${preheader}&#8203;&#65279;&#847;</div>
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${MAIL_DEEP};">
 <tr><td align="center" style="padding:48px 16px 0;">
@@ -144,7 +144,7 @@ function emailShell(preheader, eyebrow, content, opts = {}) {
     <img class="logo" src="https://m2w-ai.com/logo-white.png" width="140" alt="M2W" style="display:block;width:140px;height:auto;opacity:0.95;">
   </td></tr>
   <tr><td><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="height:1px;background:${hairlineColor};">&nbsp;</td></tr></table></td></tr>
-  <tr><td class="card" style="background:${MAIL_CARD};border-left:1px solid ${MAIL_RULE};border-right:1px solid ${MAIL_RULE};border-bottom:1px solid ${MAIL_RULE};padding:52px 52px 48px;">
+  <tr><td class="card" style="background:${MAIL_CARD};color:${MAIL_BODY};border-left:1px solid ${MAIL_RULE};border-right:1px solid ${MAIL_RULE};border-bottom:1px solid ${MAIL_RULE};padding:52px 52px 48px;">
     ${eyebrow ? `<p style="margin:0 0 20px;font-size:9px;font-weight:400;letter-spacing:5px;text-transform:uppercase;color:${MAIL_GOLD};font-family:${MAIL_FONT_M};">${eyebrow}</p>` : ''}
     ${content}
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 32px;"><tr><td style="height:1px;background:${MAIL_RULE};">&nbsp;</td></tr></table>
@@ -387,6 +387,22 @@ export default {
       return handleDeck(url, env);
     }
 
+    /* ── GET /debug/brevo: diagnostica configuracao de senders/dominios ── */
+    if (url.pathname === '/debug/brevo' && request.method === 'GET') {
+      const key = env.BREVO_API_KEY;
+      if (!key) return json({ error: 'no_brevo_key' }, 500);
+      const [senders, domains, account] = await Promise.all([
+        brevoGet(key, '/senders').then(r => r.json().catch(() => ({ error: 'parse' }))),
+        brevoGet(key, '/senders/domains').then(r => r.json().catch(() => ({ error: 'parse' }))),
+        brevoGet(key, '/account').then(r => r.json().catch(() => ({ error: 'parse' }))),
+      ]);
+      return json({
+        plan: account?.plan?.[0]?.type || 'unknown',
+        sendersList: senders?.senders?.map(s => ({ email: s.email, active: s.active })) || senders,
+        domainsList: domains?.domains?.map(d => ({ domain: d.domain, authenticated: d.authenticated, verified: d.verified })) || domains,
+      });
+    }
+
     if (request.method !== 'POST') {
       return new Response('Method Not Allowed', { status: 405, headers: CORS });
     }
@@ -599,11 +615,13 @@ export default {
     ];
 
     /* D+3 follow-up so para morno (frio recebe apenas via cron diario se sobreviver).
-     * Brevo scheduledAt tem limite estrito 72h — usamos 68h pra ter margem. */
+     * Brevo scheduledAt tem limite estrito 72h — usamos 68h pra ter margem.
+     * cc:Silvio mantido pra ele ter visibilidade do que sai pro lead. */
     if (leadTier === 'morno') {
       sequence.push({
         sender,
         to:          emailTo,
+        cc:          ccSilvio,
         subject:     `${first}, deixa eu ser direto`,
         htmlContent: buildFollowHtml3(first, servico),
         scheduledAt: hoursFromNow(68),
@@ -721,6 +739,7 @@ export default {
           const er = await brevoPost(key, '/smtp/email', {
             sender: { email: 'comercial@m2w-ai.com', name: 'Silvio Correia Filho · M2W' },
             to:      [{ email: toEmail, name: first }],
+            cc:      [{ email: 'comercial@m2w-ai.com', name: 'Silvio Correia Filho' }],
             subject: fu.subject(first),
             htmlContent: fu.build(first, servico),
           });
@@ -1104,37 +1123,53 @@ async function runEvaluationAndDispatch(env, ctx) {
     status:         'generated',
   }).catch(e => console.error('eval insert', e.message));
 
-  /* Envia 2 emails */
+  /* Envia 2 emails. Lead recebe com CC pro comercial pro Silvio ter visibilidade.
+   * Owner recebe versao briefing completa (de "Audit M2W sistema" pra evitar
+   * auto-send sender=to do mesmo address). */
   const key = env.BREVO_API_KEY;
+  const emailLog = { lead: null, owner: null };
   if (key) {
     const leadHtml  = buildLeadAuditEmail(ctx.nome, leadAudit, ctx.lang);
     const ownerHtml = buildOwnerBriefingEmail(ctx.nome, ctx.email, ownerBriefing, ctx.calc);
 
-    await Promise.all([
+    const [leadRes, ownerRes] = await Promise.all([
       brevoPost(key, '/smtp/email', {
         sender:      { email: OWNER_EMAIL, name: 'Silvio Correia Filho · M2W' },
         to:          [{ email: ctx.email, name: ctx.nome }],
+        cc:          [{ email: OWNER_EMAIL, name: 'Silvio Correia Filho' }],
+        replyTo:     { email: OWNER_EMAIL, name: 'Silvio Correia Filho' },
         subject:     `Audit M2W · ${ctx.nome}: 3 problemas identificados`,
         htmlContent: leadHtml,
-      }).then(r => console.log('lead audit sent', r.status)),
+      }).then(async r => ({ ok: r.ok, status: r.status, body: r.ok ? await r.json().catch(()=>({})) : (await r.text()).slice(0,300) })),
       brevoPost(key, '/smtp/email', {
         sender:      { email: OWNER_EMAIL, name: 'Audit M2W (sistema)' },
         to:          [{ email: OWNER_EMAIL, name: 'Silvio Correia Filho' }],
+        replyTo:     { email: OWNER_EMAIL, name: 'Silvio Correia Filho' },
         subject:     `[Briefing] ${ctx.nome} · ${ctx.email}`,
         htmlContent: ownerHtml,
-      }).then(r => console.log('owner briefing sent', r.status)),
-    ]).catch(e => console.error('audit emails ex', e.message));
+      }).then(async r => ({ ok: r.ok, status: r.status, body: r.ok ? await r.json().catch(()=>({})) : (await r.text()).slice(0,300) })),
+    ]);
+
+    emailLog.lead  = { ok: leadRes.ok, status: leadRes.status, messageId: leadRes.body?.messageId, error: leadRes.ok ? undefined : leadRes.body };
+    emailLog.owner = { ok: ownerRes.ok, status: ownerRes.status, messageId: ownerRes.body?.messageId, error: ownerRes.ok ? undefined : ownerRes.body };
+    console.log('audit emails result', JSON.stringify(emailLog));
+  } else {
+    emailLog.error = 'no_brevo_key';
   }
 
   await supabaseInsertEvent(env, ctx.supabaseLeadId, 'audit_dispatched', {
     duration_ms: Date.now() - startedAt,
+    emails: emailLog,
   });
 }
 
 /* ── Email templates pro audit ─────────────────────────────────────────────── */
 
 function mdToHtml(md) {
-  /* Conversor minimo markdown -> HTML pra email */
+  /* Conversor markdown -> HTML pra email. Garante que body apos heading
+   * seja wrapped em <p> estilizado (LLama nem sempre poe linha em branco
+   * entre h2 e paragrafo, que causava texto sem cor herdada == invisivel). */
+  const PSTYLE = `margin:0 0 14px;font-size:15px;line-height:1.78;color:${MAIL_BODY};`;
   let s = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   s = s.replace(/^# (.+)$/gm,  `<h1 style="font-family:${MAIL_FONT_D};font-style:italic;font-weight:400;font-size:32px;color:${MAIL_INK};margin:0 0 24px;letter-spacing:-0.02em;line-height:1.15;">$1</h1>`);
   s = s.replace(/^## (.+)$/gm, `<h2 style="font-family:${MAIL_FONT_D};font-style:italic;font-weight:400;font-size:20px;color:${MAIL_GOLD};margin:28px 0 10px;letter-spacing:-0.01em;line-height:1.25;">$1</h2>`);
@@ -1142,12 +1177,28 @@ function mdToHtml(md) {
   s = s.replace(/\*\*(.+?)\*\*/g, `<strong style="color:${MAIL_INK};font-weight:600;">$1</strong>`);
   s = s.replace(/^- (.+)$/gm, `<li style="margin-bottom:4px;color:${MAIL_BODY};">$1</li>`);
   s = s.replace(/(<li[^>]*>.*?<\/li>\n?)+/gs, m => `<ul style="margin:8px 0 16px;padding-left:18px;font-size:14px;line-height:1.7;">${m}</ul>`);
-  s = s.split(/\n\n+/).map(p =>
-    p.startsWith('<h') || p.startsWith('<ul') || p.startsWith('<li')
-      ? p
-      : `<p style="margin:0 0 14px;font-size:15px;line-height:1.78;color:${MAIL_BODY};">${p.replace(/\n/g, '<br>')}</p>`
-  ).join('\n');
-  return s;
+
+  /* Split por paragrafo, mas separar bloco "<h?>...</h?>\n<body>" em duas partes */
+  const blocks = s.split(/\n\n+/);
+  const out = [];
+  for (const raw of blocks) {
+    if (!raw.trim()) continue;
+    /* Caso: heading seguido por body inline (sem blank line) */
+    const m = raw.match(/^(<h[1-3][^>]*>.*?<\/h[1-3]>)\n([\s\S]+)$/);
+    if (m) {
+      out.push(m[1]);
+      out.push(`<p style="${PSTYLE}">${m[2].replace(/\n/g, '<br>')}</p>`);
+      continue;
+    }
+    /* Caso: bloco ja eh heading/ul/li puro */
+    if (raw.startsWith('<h') || raw.startsWith('<ul') || raw.startsWith('<li')) {
+      out.push(raw);
+      continue;
+    }
+    /* Caso: paragrafo de texto puro */
+    out.push(`<p style="${PSTYLE}">${raw.replace(/\n/g, '<br>')}</p>`);
+  }
+  return out.join('\n');
 }
 
 function buildLeadAuditEmail(nome, auditMd, lang) {
