@@ -8,6 +8,9 @@
 
 const GROQ_API     = 'https://api.groq.com/openai/v1/chat/completions';
 const LEADS_WORKER = 'https://m2w-leads.m2w-ai.workers.dev';
+const CALENDLY_API = 'https://api.calendly.com';
+/* Calendly: fallback URL caso a API nao esteja configurada / falhe */
+const CALENDLY_FALLBACK_URL = 'https://calendly.com/silviofilhosf/nova-reuniao';
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
@@ -114,15 +117,37 @@ Preencha o maximo que a conversa permitiu inferir. Use "" (vazio) apenas quando 
 - **medio**: ticket R$50-200, volume mid, considerando + comparando
 - **baixo**: ticket <R$50, sem volume, "curioso" sem urgencia
 
-### Caminho 2 — Call agendada (SOMENTE se pedir explicitamente):
-Se o lead disser "quero conversar", "quero call", "marca uma reuniao", "quanto falo com alguem":
-"Claro! Voce pode escolher o horario aqui no chat mesmo. 📅"
-E ao final, SHOW_CALENDLY.
+### Caminho 2 — Call direta com Silvio (slots inline no chat):
+
+**Quando oferecer call**:
+- **Sempre** que o lead demonstrar interesse em **Padrao, Premium, Pacote Completo, ou Plataforma Dev** (qualquer plano acima do Basico) — esses tickets merecem 15min com o founder.
+- **Sob demanda** quando o lead pedir "quero conversar", "quero call", "marca reuniao", "quanto falo com alguem".
+
+**Como oferecer (acima do Basico)**:
+"Pelo perfil que voce me passou, o Padrao/Premium pede 15min com o Silvio — ele desenha a estrategia certa pra seu caso. Quer que eu te mostre os horarios dele agora? 📅"
+
+Se o lead aceitar, responda calorosa e ao final: SHOW_CALENDLY_SLOTS
+(o frontend listara os proximos 5 horarios disponiveis como botoes; o lead clica um e e levado ao Calendly prefilled).
+
+**Fallback** se SHOW_CALENDLY_SLOTS nao renderizar (API down): use SHOW_CALENDLY no lugar — o frontend abre o Calendly inline tradicional.
 
 **REGRAS DURAS**:
-- NUNCA dispare SHOW_CALENDLY espontaneamente.
+- Para **Basico** ou lead exploratorio: caminho email padrao (Caminho 1).
+- Para **Padrao+**: sugira call ativamente apos a fase Pitch.
 - NUNCA force call apos capturar email — o email ja e conversao.
-- Caminhos 1 e 2 coexistem na mesma conversa se ele pedir os dois.
+- Caminhos 1 e 2 coexistem na mesma conversa se ele pedir ambos.
+
+### Caminho 3 — QR Venha! (acesso rapido m2w-ai.com)
+
+Se o lead disser "tem um link?", "como acesso o site depois?", "quero ver agora", "me manda o site":
+"Tenho um QR pronto que abre direto o m2w-ai.com — voce escaneia com a camera do celular e abre. Quero te mostrar agora? ✨"
+
+Se ele aceitar, responda confirmando e ao final: SHOW_QR_VENHA
+(o frontend renderiza o QR `/public/qr-venha.png` inline como imagem clicavel).
+
+Tambem ofereca QR proativamente quando o lead estiver com pressa ("nao tenho tempo agora", "depois eu vejo") — em vez de perder o lead, entregue acesso rapido salvavel:
+"Sem stress! Te passo o QR — voce salva no celular e abre quando der. Manda o email pra eu te enviar tambem por la? ✨"
+E ao final: SHOW_QR_VENHA
 
 ## OBJECOES E STALLS (banco completo)
 
@@ -237,6 +262,20 @@ export default {
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS });
     }
+
+    const url = new URL(request.url);
+
+    /* ── Endpoint: /slots ── retorna proximos 5 slots Calendly ── */
+    if (url.pathname === '/slots' && request.method === 'GET') {
+      try {
+        const slots = await getCalendlySlots(env);
+        return json({ ok: true, slots, fallbackUrl: CALENDLY_FALLBACK_URL });
+      } catch (e) {
+        console.error('slots ex', e.message);
+        return json({ ok: false, slots: [], fallbackUrl: CALENDLY_FALLBACK_URL, error: e.message });
+      }
+    }
+
     if (request.method !== 'POST') {
       return new Response('Method Not Allowed', { status: 405, headers: CORS });
     }
@@ -297,11 +336,31 @@ export default {
       return json({ reply: 'Desculpe, tive um problema técnico. Tente novamente.', leadCaptured: false });
     }
 
-    // ── Detect SHOW_CALENDLY sentinel ────────────────────────────────────
+    // ── Detect SHOW_CALENDLY_SLOTS (slot picker inline) ──────────────────
+    let calendlySlots = null;
+    if (reply.includes('SHOW_CALENDLY_SLOTS')) {
+      try {
+        const slots = await getCalendlySlots(env);
+        calendlySlots = { slots, fallbackUrl: CALENDLY_FALLBACK_URL };
+      } catch (e) {
+        console.error('inline slots ex', e.message);
+        calendlySlots = { slots: [], fallbackUrl: CALENDLY_FALLBACK_URL, error: 'api_unavailable' };
+      }
+      reply = reply.replace(/SHOW_CALENDLY_SLOTS/g, '').trim();
+    }
+
+    // ── Detect SHOW_CALENDLY (legado, iframe tradicional) ────────────────
     let calendly = false;
     if (reply.includes('SHOW_CALENDLY')) {
       calendly = true;
       reply = reply.replace(/SHOW_CALENDLY/g, '').trim();
+    }
+
+    // ── Detect SHOW_QR_VENHA (renderiza QR inline no chat) ────────────────
+    let qrVenha = false;
+    if (reply.includes('SHOW_QR_VENHA')) {
+      qrVenha = true;
+      reply = reply.replace(/SHOW_QR_VENHA/g, '').trim();
     }
 
     // ── Detect LEAD_CAPTURED sentinel ────────────────────────────────────
@@ -346,7 +405,7 @@ export default {
       reply = reply.replace(/LEAD_CAPTURED:\s*\{[\s\S]*?\}/g, '').replace(/\n{3,}/g, '\n\n').trim();
     }
 
-    return json({ reply, leadCaptured, calendly });
+    return json({ reply, leadCaptured, calendly, calendlySlots, qrVenha });
   },
 };
 
@@ -355,4 +414,85 @@ function json(data, status = 200) {
     status,
     headers: { ...CORS, 'Content-Type': 'application/json' },
   });
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Calendly v2 API helpers
+ *   env.CALENDLY_TOKEN   — Personal Access Token (free tier OK pra reads)
+ *   env.CALENDLY_USER    — opcional: URI do user (caching). Se ausente, fetch /users/me.
+ *   env.CALENDLY_EVENT   — opcional: URI do event_type "nova-reuniao". Se ausente, primeiro disponivel.
+ *
+ * Retorna lista de { startIso, endIso, label, schedulingUrl }
+ * onde schedulingUrl ja inclui o slot pre-selecionado para abrir no Calendly.
+ * ───────────────────────────────────────────────────────────────────────────── */
+
+async function calendlyGet(token, path) {
+  const r = await fetch(`${CALENDLY_API}${path}`, {
+    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
+  });
+  if (!r.ok) throw new Error(`Calendly ${path} ${r.status}: ${(await r.text()).slice(0, 200)}`);
+  return r.json();
+}
+
+async function getCalendlySlots(env, count = 5) {
+  const token = env.CALENDLY_TOKEN;
+  if (!token) throw new Error('CALENDLY_TOKEN not set');
+
+  let userUri  = env.CALENDLY_USER;
+  let eventUri = env.CALENDLY_EVENT;
+
+  if (!userUri) {
+    const me = await calendlyGet(token, '/users/me');
+    userUri = me?.resource?.uri;
+  }
+  if (!userUri) throw new Error('Could not resolve user URI');
+
+  if (!eventUri) {
+    const ets = await calendlyGet(
+      token,
+      `/event_types?user=${encodeURIComponent(userUri)}&active=true&count=10`,
+    );
+    /* Preferir o "nova-reuniao" pelo slug; fallback: primeiro ativo */
+    const items = ets?.collection || [];
+    const preferred = items.find(e => /nova-reuniao|new-meeting|m2w/i.test(e.slug || ''));
+    eventUri = (preferred || items[0])?.uri;
+  }
+  if (!eventUri) throw new Error('No active event types found');
+
+  /* Janela: proximos 7 dias */
+  const now = new Date();
+  const end = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const fmt = d => d.toISOString().slice(0, 19) + 'Z';
+
+  const times = await calendlyGet(
+    token,
+    `/event_type_available_times?event_type=${encodeURIComponent(eventUri)}` +
+    `&start_time=${fmt(now)}&end_time=${fmt(end)}`,
+  );
+
+  const all = times?.collection || [];
+  const eventUuid = eventUri.split('/').pop();
+
+  return all.slice(0, count).map(t => {
+    const start = new Date(t.start_time);
+    const label = formatSlotPtBr(start);
+    /* scheduling_url ja vem do Calendly como link unico para aquele slot */
+    return {
+      startIso: t.start_time,
+      label,
+      schedulingUrl: t.scheduling_url || `${CALENDLY_FALLBACK_URL}/${eventUuid}`,
+    };
+  });
+}
+
+function formatSlotPtBr(date) {
+  /* Ex.: "Seg 27/05 · 14:00" — UTC-3 (Brasilia) */
+  const utcMinus3 = new Date(date.getTime() - 3 * 60 * 60 * 1000);
+  const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+  const dn = days[utcMinus3.getUTCDay()];
+  const dd = String(utcMinus3.getUTCDate()).padStart(2, '0');
+  const mm = String(utcMinus3.getUTCMonth() + 1).padStart(2, '0');
+  const hh = String(utcMinus3.getUTCHours()).padStart(2, '0');
+  const mn = String(utcMinus3.getUTCMinutes()).padStart(2, '0');
+  return `${dn} ${dd}/${mm} · ${hh}:${mn}`;
 }

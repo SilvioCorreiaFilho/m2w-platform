@@ -511,6 +511,59 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 .form-network-err strong{color:#fca5a5;font-weight:600}
 .form-network-err a{color:#fff;text-decoration:underline;text-underline-offset:3px}
 .cta-input[aria-invalid="true"],.cta-textarea[aria-invalid="true"]{border-bottom-color:#f87171}
+
+/* ═══ CALCULADORA / AUDIT M2W ═══════════════════════════════════════════════ */
+.calc-card{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1.1fr 1fr;gap:2.5rem;background:var(--glass);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--g-brd);border-radius:var(--r);padding:2.5rem;position:relative;overflow:hidden}
+@media(max-width:900px){.calc-card{grid-template-columns:1fr;gap:2rem;padding:2rem}}
+.calc-inputs{display:flex;flex-direction:column;gap:1.75rem}
+.calc-q{display:flex;flex-direction:column;gap:.75rem}
+.calc-lbl{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.calc-pills{display:flex;flex-wrap:wrap;gap:.5rem}
+.calc-pill-inp{display:none}
+.calc-pill{font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;padding:.6rem 1rem;border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.55);cursor:pointer;border-radius:6px;transition:all .25s}
+.calc-pill:hover{border-color:rgba(168,85,247,.4);color:var(--txt)}
+.calc-pill-inp:checked+.calc-pill{border-color:var(--pg);color:var(--txt);background:rgba(168,85,247,.12)}
+.calc-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;background:rgba(255,255,255,.1);border-radius:99px;outline:none;cursor:pointer}
+.calc-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--pg);cursor:pointer;border:2px solid var(--deep);box-shadow:0 0 16px rgba(139,92,246,.5);transition:transform .15s}
+.calc-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--pg);cursor:pointer;border:2px solid var(--deep);box-shadow:0 0 16px rgba(139,92,246,.5)}
+.calc-slider::-webkit-slider-thumb:hover{transform:scale(1.15)}
+.calc-slider-ticks{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:.5rem;letter-spacing:.15em;color:rgba(255,255,255,.3);margin-top:.4rem}
+.calc-ticket-out{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-weight:300;font-size:1.1rem;color:var(--txt);letter-spacing:0;text-transform:none}
+.calc-output{display:flex;flex-direction:column;gap:1.25rem}
+.calc-cmp{display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;align-items:center}
+.calc-cmp-col{text-align:center}
+.calc-cmp-lbl{font-family:'JetBrains Mono',monospace;font-size:.5rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin:0 0 .5rem}
+.calc-cmp-val{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-weight:300;font-size:clamp(1.6rem,3vw,2.3rem);line-height:1;color:var(--txt);margin:0}
+.calc-cmp-old .calc-cmp-val{color:#f87171;text-decoration:line-through;text-decoration-color:rgba(248,113,113,.5);text-decoration-thickness:1px}
+.calc-cmp-sub{font-family:'JetBrains Mono',monospace;font-size:.48rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:.4rem 0 0}
+.calc-cmp-arrow{font-size:1.4rem;color:var(--pg);font-weight:300;opacity:.6}
+.calc-savings{border-top:1px solid var(--g-brd);padding-top:1rem;display:flex;flex-direction:column;gap:.5rem}
+.calc-save-row{display:flex;justify-content:space-between;align-items:baseline;padding:.35rem 0}
+.calc-save-row.calc-save-hi{padding:.65rem .85rem;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.18);border-radius:6px;margin:.25rem 0}
+.calc-save-lbl{font-family:'JetBrains Mono',monospace;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.65)}
+.calc-save-row.calc-save-hi .calc-save-lbl{color:var(--txt)}
+.calc-save-val{font-family:'DM Sans',sans-serif;font-weight:700;font-size:.95rem;color:var(--txt)}
+.calc-save-row.calc-save-hi .calc-save-val{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-weight:300;font-size:1.5rem}
+.calc-gate{display:flex;flex-direction:column;gap:.75rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--g-brd)}
+.calc-gate-ttl{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-weight:300;font-size:1.25rem;line-height:1.25;color:var(--txt);margin:0}
+.calc-gate-sub{font-size:.78rem;line-height:1.55;color:var(--muted);margin:0 0 .4rem}
+.calc-gate-sub strong{color:var(--txt);font-weight:500}
+.calc-gate-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.calc-gate-grid .calc-inp:nth-child(3){grid-column:1/-1}
+@media(max-width:560px){.calc-gate-grid{grid-template-columns:1fr}.calc-gate-grid .calc-inp:nth-child(3){grid-column:auto}}
+.calc-inp{background:rgba(0,0,0,.35);border:1px solid var(--g-brd);color:var(--txt);font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:300;padding:.7rem .9rem;border-radius:6px;outline:none;transition:border-color .3s,background .3s;-webkit-appearance:none}
+.calc-inp:focus{border-color:var(--pg);background:rgba(0,0,0,.5)}
+.calc-inp::placeholder{color:rgba(255,255,255,.4)}
+.calc-inp[aria-invalid="true"]{border-color:#f87171}
+.calc-gate-btn{width:100%;background:var(--grd);border:none;color:#fff;font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;padding:.95rem 1.5rem;border-radius:6px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;justify-content:center;gap:.65rem;box-shadow:0 0 24px rgba(168,85,247,.32);margin-top:.25rem}
+.calc-gate-btn:hover:not(:disabled){opacity:.92;transform:translateY(-1px);box-shadow:0 0 36px rgba(168,85,247,.5)}
+.calc-gate-btn:disabled{opacity:.5;cursor:not-allowed}
+.calc-gate-micro{font-family:'JetBrains Mono',monospace;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.32);text-align:center;margin:0}
+.calc-success{display:none;padding:2rem 1rem;text-align:center}
+.calc-success.on{display:block}
+.calc-success-ttl{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-weight:300;font-size:clamp(2rem,4vw,2.8rem);line-height:1;color:var(--txt);margin:0 0 1rem}
+.calc-success-sub{font-size:.85rem;line-height:1.65;color:var(--muted);max-width:380px;margin:0 auto}
+.calc-gate.hidden,.calc-output.gate-only .calc-cmp,.calc-output.gate-only .calc-savings{display:none}
 .form-err{font-family:'JetBrains Mono',monospace;font-size:.48rem;letter-spacing:.18em;color:#f87171;text-transform:uppercase;min-height:1em;margin-top:.2rem}
 .cta-lbl-opt{font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.14em;color:rgba(255,255,255,.35);font-weight:400;margin-left:.35rem;text-transform:none}
 .cta-textarea-sm{min-height:54px}
@@ -1057,6 +1110,98 @@ footer{border-top:1px solid var(--g-brd);padding:1.75rem 2.5rem;display:flex;jus
 </section>
 
 
+<!-- ─── LEAD MAGNET: CALCULADORA DE ECONOMIA ─── -->
+<section class="sec" id="calculadora" aria-labelledby="calc-ttl" style="background:linear-gradient(180deg,var(--deep) 0%,var(--surf) 50%,var(--deep) 100%);position:relative;overflow:hidden;">
+  <div class="wrap">
+    <div class="sec-hd reveal" style="text-align:center;max-width:680px;margin:0 auto 3rem">
+      <span class="lbl sec-pre" data-i18n="calc.kicker">Ferramenta · Calcule sua economia</span>
+      <h2 class="sec-ttl" id="calc-ttl"><span data-i18n="calc.titleLine1">Quanto você economizaria</span><br><span data-i18n="calc.titleLine2">trocando influencer humano por IA?</span></h2>
+      <p data-i18n="calc.intro" style="color:var(--muted);font-size:.95rem;margin-top:1rem;line-height:1.7">Em menos de 30 segundos, sua conta vira um número real. Sem cadastro pra calcular — só pra receber o Plano M2W personalizado por email.</p>
+    </div>
+
+    <div class="calc-card reveal">
+      <div class="calc-inputs">
+        <div class="calc-q">
+          <label class="calc-lbl" data-i18n="calc.q1">Volume de posts por mês que você precisa</label>
+          <div class="calc-pills" role="radiogroup" aria-label="Volume de posts por mês">
+            <input type="radio" name="calc-vol" id="cv1" value="10" class="calc-pill-inp"><label for="cv1" class="calc-pill" data-i18n="calc.vol1">10 posts</label>
+            <input type="radio" name="calc-vol" id="cv2" value="30" class="calc-pill-inp" checked><label for="cv2" class="calc-pill" data-i18n="calc.vol2">30 posts ⭐</label>
+            <input type="radio" name="calc-vol" id="cv3" value="60" class="calc-pill-inp"><label for="cv3" class="calc-pill" data-i18n="calc.vol3">60 posts</label>
+            <input type="radio" name="calc-vol" id="cv4" value="100" class="calc-pill-inp"><label for="cv4" class="calc-pill" data-i18n="calc.vol4">100+ posts</label>
+          </div>
+        </div>
+
+        <div class="calc-q">
+          <label class="calc-lbl" data-i18n="calc.q2">Seu modelo atual de produção</label>
+          <div class="calc-pills" role="radiogroup" aria-label="Modelo de produção atual">
+            <input type="radio" name="calc-model" id="cm1" value="agencia" class="calc-pill-inp" checked><label for="cm1" class="calc-pill" data-i18n="calc.model1">Agência tradicional</label>
+            <input type="radio" name="calc-model" id="cm2" value="influencer" class="calc-pill-inp"><label for="cm2" class="calc-pill" data-i18n="calc.model2">Influencer humano</label>
+            <input type="radio" name="calc-model" id="cm3" value="interno" class="calc-pill-inp"><label for="cm3" class="calc-pill" data-i18n="calc.model3">Equipe interna</label>
+            <input type="radio" name="calc-model" id="cm4" value="nenhum" class="calc-pill-inp"><label for="cm4" class="calc-pill" data-i18n="calc.model4">Ainda não produzo</label>
+          </div>
+        </div>
+
+        <div class="calc-q">
+          <label class="calc-lbl" for="cticket"><span data-i18n="calc.q3">Ticket médio do seu produto</span> · <span id="cticket-out" class="calc-ticket-out">R$ 200</span></label>
+          <input type="range" id="cticket" min="30" max="2000" step="10" value="200" class="calc-slider" aria-label="Ticket médio do produto">
+          <div class="calc-slider-ticks"><span>R$30</span><span>R$500</span><span>R$1.000</span><span>R$2.000+</span></div>
+        </div>
+      </div>
+
+      <div class="calc-output" id="calc-output">
+        <div class="calc-cmp">
+          <div class="calc-cmp-col calc-cmp-old">
+            <p class="calc-cmp-lbl" data-i18n="calc.outOld">Modelo atual</p>
+            <p class="calc-cmp-val" id="calc-old-val">R$ 0</p>
+            <p class="calc-cmp-sub" id="calc-old-sub" data-i18n="calc.perMonth">/mês estimado</p>
+          </div>
+          <div class="calc-cmp-arrow">→</div>
+          <div class="calc-cmp-col calc-cmp-new">
+            <p class="calc-cmp-lbl" data-i18n="calc.outM2w">Com M2W</p>
+            <p class="calc-cmp-val grd-t" id="calc-new-val">R$ 0</p>
+            <p class="calc-cmp-sub" id="calc-new-plan" data-i18n="calc.planBasico">Plano Básico</p>
+          </div>
+        </div>
+
+        <div class="calc-savings">
+          <div class="calc-save-row">
+            <span class="calc-save-lbl" data-i18n="calc.saveMonth">Economia mensal</span>
+            <span class="calc-save-val" id="calc-save-month">R$ 0</span>
+          </div>
+          <div class="calc-save-row calc-save-hi">
+            <span class="calc-save-lbl" data-i18n="calc.saveYear">Economia em 12 meses</span>
+            <span class="calc-save-val" id="calc-save-year">R$ 0</span>
+          </div>
+          <div class="calc-save-row">
+            <span class="calc-save-lbl" data-i18n="calc.savePct">Redução de custo</span>
+            <span class="calc-save-val" id="calc-save-pct">0%</span>
+          </div>
+        </div>
+
+        <!-- Audit gate (gera diagnóstico personalizado via IA + Llama) -->
+        <form id="calc-form" class="calc-gate" novalidate>
+          <p class="calc-gate-ttl" data-i18n="calc.gateTtl">Receba o Audit M2W da sua marca em &lt; 24h</p>
+          <p class="calc-gate-sub" data-i18n="calc.gateSub">Nossa IA (Llama 3.3) cruza seus números, site e redes pra gerar um diagnóstico personalizado: <strong>3 problemas críticos identificados</strong> e como resolver.</p>
+          <div class="calc-gate-grid">
+            <input type="text" id="calc-nome" name="nome" class="calc-inp" data-i18n-placeholder="calc.namePh" placeholder="Seu nome" autocomplete="name" required>
+            <input type="email" id="calc-email" name="email" class="calc-inp" data-i18n-placeholder="calc.emailPh" placeholder="você@empresa.com" autocomplete="email" required>
+            <input type="url" id="calc-site" name="site" class="calc-inp" data-i18n-placeholder="calc.sitePh" placeholder="https://suaempresa.com ou @handle (opcional)" autocomplete="url">
+          </div>
+          <button type="submit" class="calc-gate-btn" id="calc-submit-btn"><span data-i18n="calc.gateBtn">Gerar meu Audit →</span></button>
+          <span class="form-err" id="calc-err"></span>
+          <p class="calc-gate-micro" data-i18n="calc.gateMicro">Sem spam · sem cobrança · audit chega em &lt; 24h</p>
+        </form>
+
+        <!-- Success state -->
+        <div class="calc-success" id="calc-success">
+          <p class="calc-success-ttl" data-i18n="calc.successTtl">Audit em produção.</p>
+          <p class="calc-success-sub" data-i18n="calc.successSub">Nossa IA está analisando seu caso. Você recebe o diagnóstico no email em menos de 24h. Cheque caixa de entrada e spam.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- GUARANTEE -->
 <section class="sec sec-glow" id="garantia" aria-label="Garantia M2W: ROI no 1º trimestre e setup em 48h">
   <div class="wrap">
@@ -1338,6 +1483,23 @@ const I18N = {
     'ps.lead':'O único risco real é esperar mais seis meses para tomar essa decisão.',
     'ps.body':'O mercado de influência com IA cresceu 450% em 12 meses e ainda está nos estágios iniciais no Brasil. As marcas que entram agora chegam com vantagem de dados, de algoritmo e de presença. A garantia protege você. O preço cabe no orçamento. O setup é rápido.',
     'footer.copy':'© 2026 Marketing to Win · LGPD Compliant',
+    'calc.kicker':'Ferramenta · Calcule sua economia',
+    'calc.titleLine1':'Quanto você economizaria','calc.titleLine2':'trocando influencer humano por IA?',
+    'calc.intro':'Em menos de 30 segundos, sua conta vira um número real. Sem cadastro pra calcular — só pra receber o Audit M2W personalizado por email.',
+    'calc.q1':'Volume de posts por mês que você precisa',
+    'calc.vol1':'10 posts','calc.vol2':'30 posts ⭐','calc.vol3':'60 posts','calc.vol4':'100+ posts',
+    'calc.q2':'Seu modelo atual de produção',
+    'calc.model1':'Agência tradicional','calc.model2':'Influencer humano','calc.model3':'Equipe interna','calc.model4':'Ainda não produzo',
+    'calc.q3':'Ticket médio do seu produto',
+    'calc.outOld':'Modelo atual','calc.outM2w':'Com M2W',
+    'calc.perMonth':'/mês estimado','calc.planBasico':'Plano Básico',
+    'calc.saveMonth':'Economia mensal','calc.saveYear':'Economia em 12 meses','calc.savePct':'Redução de custo',
+    'calc.gateTtl':'Receba o Audit M2W da sua marca em < 24h',
+    'calc.gateSub':'Nossa IA (Llama 3.3) cruza seus números, site e redes pra gerar um diagnóstico personalizado: <strong>3 problemas críticos identificados</strong> e como resolver.',
+    'calc.namePh':'Seu nome','calc.emailPh':'você@empresa.com','calc.sitePh':'https://suaempresa.com ou @handle (opcional)',
+    'calc.gateBtn':'Gerar meu Audit →',
+    'calc.gateMicro':'Sem spam · sem cobrança · audit chega em < 24h',
+    'calc.successTtl':'Audit em produção.','calc.successSub':'Nossa IA está analisando seu caso. Você recebe o diagnóstico no email em menos de 24h. Cheque caixa de entrada e spam.',
     'meta.title':'M2W · Influencers Digitais de IA para TikTok Shop, Ecommerce e Marcas | Brasília',
     'meta.desc':'Crie influencers digitais de IA que vendem 24/7 no TikTok Shop e Ecommerce. Setup em 48h, ROI garantido em contrato e 90% mais barato que micro-influencer humano. Atendemos marcas em todo o Brasil.',
   },
@@ -1450,6 +1612,23 @@ const I18N = {
     'ps.lead':'The only real risk is waiting six more months to make this decision.',
     'ps.body':'The AI influencer market grew 450% in 12 months and is still in early stages in Brazil and LATAM. Brands entering now arrive with data, algorithm and presence advantage. The guarantee protects you. The price fits the budget. Setup is fast.',
     'footer.copy':'© 2026 Marketing to Win · LGPD & GDPR Compliant',
+    'calc.kicker':'Tool · Calculate your savings',
+    'calc.titleLine1':'How much would you save','calc.titleLine2':'switching from human influencer to AI?',
+    'calc.intro':'In under 30 seconds, your math becomes a real number. No signup to calculate — only to receive your personalized M2W Audit by email.',
+    'calc.q1':'Volume of posts per month you need',
+    'calc.vol1':'10 posts','calc.vol2':'30 posts ⭐','calc.vol3':'60 posts','calc.vol4':'100+ posts',
+    'calc.q2':'Your current production model',
+    'calc.model1':'Traditional agency','calc.model2':'Human influencer','calc.model3':'In-house team','calc.model4':'Not producing yet',
+    'calc.q3':'Average ticket of your product',
+    'calc.outOld':'Current model','calc.outM2w':'With M2W',
+    'calc.perMonth':'/month estimated','calc.planBasico':'Starter Plan',
+    'calc.saveMonth':'Monthly savings','calc.saveYear':'12-month savings','calc.savePct':'Cost reduction',
+    'calc.gateTtl':'Get your M2W Audit in < 24h',
+    'calc.gateSub':'Our AI (Llama 3.3) cross-references your numbers, site and social handles to generate a personalized diagnosis: <strong>3 critical problems identified</strong> and how to fix them.',
+    'calc.namePh':'Your name','calc.emailPh':'you@company.com','calc.sitePh':'https://yourcompany.com or @handle (optional)',
+    'calc.gateBtn':'Get my Audit →',
+    'calc.gateMicro':'No spam · no charge · audit arrives in < 24h',
+    'calc.successTtl':'Audit in production.','calc.successSub':'Our AI is analyzing your case. You\'ll get the diagnosis by email in less than 24h. Check inbox and spam.',
     'meta.title':'M2W · AI Digital Influencers for TikTok Shop, Ecommerce & Brands',
     'meta.desc':'AI digital influencers that sell 24/7 on TikTok Shop and Ecommerce. 48h setup, ROI guaranteed in writing, 90% cheaper than a human micro-influencer. Serving brands worldwide from Brasília.',
   },
@@ -1562,6 +1741,23 @@ const I18N = {
     'ps.lead':'El único riesgo real es esperar seis meses más para tomar esta decisión.',
     'ps.body':'El mercado de influencia con IA creció 450% en 12 meses y todavía está en etapas iniciales en LATAM. Las marcas que entran ahora llegan con ventaja de datos, algoritmo y presencia. La garantía te protege. El precio cabe en el presupuesto. El setup es rápido.',
     'footer.copy':'© 2026 Marketing to Win · LGPD & GDPR Compliant',
+    'calc.kicker':'Herramienta · Calcula tu ahorro',
+    'calc.titleLine1':'¿Cuánto ahorrarías','calc.titleLine2':'cambiando influencer humano por IA?',
+    'calc.intro':'En menos de 30 segundos, tu cuenta se vuelve un número real. Sin registro para calcular — solo para recibir tu Audit M2W personalizado por email.',
+    'calc.q1':'Volumen de posts por mes que necesitas',
+    'calc.vol1':'10 posts','calc.vol2':'30 posts ⭐','calc.vol3':'60 posts','calc.vol4':'100+ posts',
+    'calc.q2':'Tu modelo actual de producción',
+    'calc.model1':'Agencia tradicional','calc.model2':'Influencer humano','calc.model3':'Equipo interno','calc.model4':'Aún no produzco',
+    'calc.q3':'Ticket promedio de tu producto',
+    'calc.outOld':'Modelo actual','calc.outM2w':'Con M2W',
+    'calc.perMonth':'/mes estimado','calc.planBasico':'Plan Básico',
+    'calc.saveMonth':'Ahorro mensual','calc.saveYear':'Ahorro en 12 meses','calc.savePct':'Reducción de costo',
+    'calc.gateTtl':'Recibe el Audit M2W de tu marca en < 24h',
+    'calc.gateSub':'Nuestra IA (Llama 3.3) cruza tus números, sitio y redes para generar un diagnóstico personalizado: <strong>3 problemas críticos identificados</strong> y cómo resolverlos.',
+    'calc.namePh':'Tu nombre','calc.emailPh':'tu@empresa.com','calc.sitePh':'https://tuempresa.com o @handle (opcional)',
+    'calc.gateBtn':'Generar mi Audit →',
+    'calc.gateMicro':'Sin spam · sin cobro · audit llega en < 24h',
+    'calc.successTtl':'Audit en producción.','calc.successSub':'Nuestra IA está analizando tu caso. Recibirás el diagnóstico por email en menos de 24h. Revisa bandeja y spam.',
     'meta.title':'M2W · Influencers Digitales de IA para TikTok Shop, Ecommerce y Marcas',
     'meta.desc':'Influencers digitales de IA que venden 24/7 en TikTok Shop y Ecommerce. Setup en 48h, ROI garantizado por contrato y 90% más barato que un micro-influencer humano. Atendemos marcas en LATAM.',
   },
@@ -1747,6 +1943,138 @@ function buildTicker() {
     track.innerHTML = (list.concat(list)).map((s, i) => `<span class="tk${(i%3===0)?' d':''}">${s}</span>`).join('');
   });
 }
+
+/* ── Calculadora de Economia + Audit M2W ──────────────────────────────────── */
+(function initCalculadora(){
+  const card = document.querySelector('.calc-card');
+  if(!card) return;
+
+  /* Custo estimado por modelo · ticket-aware multipliers (BRL/post mediana) */
+  /* Modelos:
+   *   agencia    — agência tradicional: R$1.500/post fixo + 10% do ticket por post (overhead)
+   *   influencer — micro-influencer humano: R$1.000 + 5×ticket (escala com produto)
+   *   interno    — equipe interna: R$900/post (custo de mão de obra prorrateado)
+   *   nenhum     — ainda não produz: assumimos custo de oportunidade R$500/post (CAC perdido)
+   */
+  const COST_PER_POST = {
+    agencia:    (t) => 1500 + 0.10 * t,
+    influencer: (t) => 1000 + 5    * t,
+    interno:    () => 900,
+    nenhum:     () => 500,
+  };
+
+  /* Plano M2W por volume */
+  const M2W_PLAN = {
+    10:  { ttl: 'Básico Ecommerce',  price: 1990 },
+    30:  { ttl: 'Básico TikTok Shop', price: 2490 },
+    60:  { ttl: 'Padrão · Influencer Exclusivo', price: 4990 },
+    100: { ttl: 'Premium · Ilimitado', price: 9990 },
+  };
+
+  const $ = id => document.getElementById(id);
+  const slider     = $('cticket');
+  const ticketOut  = $('cticket-out');
+  const oldVal     = $('calc-old-val');
+  const oldSub     = $('calc-old-sub');
+  const newVal     = $('calc-new-val');
+  const newPlan    = $('calc-new-plan');
+  const saveMonth  = $('calc-save-month');
+  const saveYear   = $('calc-save-year');
+  const savePct    = $('calc-save-pct');
+
+  const fmtBRL = n => 'R$ ' + Math.round(n).toLocaleString('pt-BR');
+
+  function recalc(){
+    const vol = parseInt(document.querySelector('input[name="calc-vol"]:checked')?.value || '30', 10);
+    const model = document.querySelector('input[name="calc-model"]:checked')?.value || 'agencia';
+    const ticket = parseInt(slider.value, 10);
+
+    ticketOut.textContent = fmtBRL(ticket);
+
+    const oldMonth = COST_PER_POST[model](ticket) * vol;
+    const plan = M2W_PLAN[vol] || M2W_PLAN[30];
+    const newMonth = plan.price;
+    const savings  = Math.max(0, oldMonth - newMonth);
+    const pct      = oldMonth > 0 ? Math.round((savings / oldMonth) * 100) : 0;
+
+    oldVal.textContent    = fmtBRL(oldMonth);
+    newVal.textContent    = fmtBRL(newMonth);
+    newPlan.textContent   = plan.ttl;
+    saveMonth.textContent = fmtBRL(savings);
+    saveYear.textContent  = fmtBRL(savings * 12);
+    savePct.textContent   = pct + '%';
+  }
+
+  /* Wire inputs */
+  ['change','input'].forEach(evt => {
+    document.querySelectorAll('input[name="calc-vol"], input[name="calc-model"], #cticket').forEach(el => el.addEventListener(evt, recalc));
+  });
+  recalc();
+
+  /* Submit: gate envia para /audit do worker leads */
+  const form    = $('calc-form');
+  const success = $('calc-success');
+  const btn     = $('calc-submit-btn');
+  const errSpan = $('calc-err');
+  const inpNome  = $('calc-nome');
+  const inpEmail = $('calc-email');
+  const inpSite  = $('calc-site');
+
+  function setErr(msg){
+    errSpan.textContent = msg || '';
+    inpEmail.setAttribute('aria-invalid', msg ? 'true' : 'false');
+  }
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    setErr('');
+    const nome  = inpNome.value.trim();
+    const email = inpEmail.value.trim();
+    const site  = inpSite.value.trim();
+    if(!nome || nome.length < 2){ setErr(T('form.errNomeEmpty')); inpNome.focus(); return; }
+    if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ setErr(T('form.errEmailInvalid')); inpEmail.focus(); return; }
+
+    const vol = parseInt(document.querySelector('input[name="calc-vol"]:checked')?.value || '30', 10);
+    const model = document.querySelector('input[name="calc-model"]:checked')?.value || 'agencia';
+    const ticket = parseInt(slider.value, 10);
+    const oldMonth = COST_PER_POST[model](ticket) * vol;
+    const plan = M2W_PLAN[vol] || M2W_PLAN[30];
+    const newMonth = plan.price;
+    const savings = Math.max(0, oldMonth - newMonth);
+
+    btn.disabled = true;
+    btn.querySelector('span').textContent = 'Enviando...';
+
+    try {
+      const res = await fetch('https://m2w-leads.m2w-ai.workers.dev/audit', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          nome, email, site,
+          source: 'calculadora',
+          lang: currentLang,
+          calc: {
+            volume_posts_mes: vol,
+            modelo_atual: model,
+            ticket_medio: ticket,
+            custo_atual_estimado: Math.round(oldMonth),
+            plano_m2w_recomendado: plan.ttl,
+            custo_m2w: newMonth,
+            economia_mensal: Math.round(savings),
+            economia_anual: Math.round(savings * 12),
+          },
+        }),
+      });
+      if(!res.ok) throw new Error('audit failed ' + res.status);
+      form.style.display = 'none';
+      success.classList.add('on');
+    } catch(err) {
+      btn.disabled = false;
+      btn.querySelector('span').textContent = T('calc.gateBtn');
+      setErr('Não conseguimos enviar agora. Tente novamente ou escreva direto para comercial@m2w-ai.com');
+    }
+  });
+})();
 
 /* Wire rebuilds for language switching */
 window.__rebuildDynamic = function() {
@@ -2957,6 +3285,73 @@ document.querySelectorAll('.reveal').forEach((el,i)=>{
     }
   }
 
+  // ── Slot picker (Calendly API real) ──────────────────────────────────────
+  function addSlotPicker(payload){
+    var slots = (payload && payload.slots) || [];
+    var fallbackUrl = (payload && payload.fallbackUrl) || CALENDLY_URL;
+    var wrap = document.createElement('div');
+    wrap.className = 'msg msg-bot slot-picker';
+    wrap.style.cssText = 'background:rgba(200,169,126,.04);border:1px solid rgba(200,169,126,.2);padding:14px 16px;max-width:94%;';
+
+    if(!slots.length){
+      // API indisponivel — cair pro embed tradicional
+      wrap.innerHTML = '<p style="font-size:11px;color:rgba(255,255,255,.55);margin:0 0 10px;">Vou abrir a agenda completa do Silvio:</p>';
+      var btn = document.createElement('a');
+      btn.href = fallbackUrl;
+      btn.target = '_blank';
+      btn.rel = 'noopener';
+      btn.style.cssText = 'display:inline-block;padding:9px 18px;background:#C8A97E;color:#060608;font-family:inherit;font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;text-decoration:none;border-radius:6px;';
+      btn.textContent = 'Abrir Calendly →';
+      wrap.appendChild(btn);
+    } else {
+      var hdr = document.createElement('p');
+      hdr.style.cssText = 'font-family:"Courier New",monospace;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:#C8A97E;margin:0 0 12px;';
+      hdr.textContent = 'Próximos horários · 15 min · Silvio';
+      wrap.appendChild(hdr);
+
+      var grid = document.createElement('div');
+      grid.style.cssText = 'display:flex;flex-direction:column;gap:6px;';
+      slots.forEach(function(s){
+        var a = document.createElement('a');
+        a.href = s.schedulingUrl;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#f0f0f0;font-size:13px;text-decoration:none;transition:all .2s;';
+        a.onmouseenter = function(){ this.style.borderColor='rgba(200,169,126,.55)'; this.style.background='rgba(200,169,126,.08)'; };
+        a.onmouseleave = function(){ this.style.borderColor='rgba(255,255,255,.1)';     this.style.background='rgba(255,255,255,.04)'; };
+        a.innerHTML = '<span style="font-weight:500;">'+s.label+'</span><span style="color:#C8A97E;font-size:14px;font-weight:300;">→</span>';
+        grid.appendChild(a);
+      });
+      wrap.appendChild(grid);
+
+      var foot = document.createElement('p');
+      foot.style.cssText = 'font-family:"Courier New",monospace;font-size:8.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin:10px 0 0;text-align:center;';
+      foot.innerHTML = 'Clique → confirma no Calendly · <a href="'+fallbackUrl+'" target="_blank" rel="noopener" style="color:rgba(200,169,126,.7);text-decoration:underline;">ver todos os horários</a>';
+      wrap.appendChild(foot);
+    }
+
+    msgs.appendChild(wrap);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  // ── QR Venha! (acesso rápido m2w-ai.com) ─────────────────────────────────
+  function addQrVenha(){
+    var wrap = document.createElement('div');
+    wrap.className = 'msg msg-bot qr-venha';
+    wrap.style.cssText = 'background:rgba(255,255,255,.96);border:1px solid rgba(255,255,255,.18);padding:18px;max-width:240px;text-align:center;border-radius:14px;';
+    var a = document.createElement('a');
+    a.href = 'https://m2w-ai.com';
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.style.cssText = 'display:block;text-decoration:none;';
+    a.innerHTML =
+      '<img src="/public/qr-venha.png" alt="QR M2W Venha!" style="width:170px;height:auto;display:block;margin:0 auto 8px;border-radius:8px;">' +
+      '<p style="margin:0;font-family:\'Courier New\',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#060608;font-weight:600;">Escaneie · m2w-ai.com</p>';
+    wrap.appendChild(a);
+    msgs.appendChild(wrap);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
   // \u2500\u2500 Markdown renderer \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   function renderBot(text){
     var s = text
@@ -3125,6 +3520,8 @@ document.querySelectorAll('.reveal').forEach((el,i)=>{
         },500);
       }
       if(data.calendly){ setTimeout(addCalendlyEmbed,600); }
+      if(data.calendlySlots){ setTimeout(function(){ addSlotPicker(data.calendlySlots); },600); }
+      if(data.qrVenha){ setTimeout(addQrVenha,500); }
       sending=false; updateSend(); input.focus();
     })
     .catch(function(){

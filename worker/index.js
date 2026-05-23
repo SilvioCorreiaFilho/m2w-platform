@@ -14,6 +14,11 @@ const PIPELINE_ID = '6a0d0fb86662659f87dbfd17';
 const STAGE_NOVO  = 'd700c0e7-c2f4-4ba8-9c87-8d859c013029';
 const OWNER_ID    = '6a0d0fb0b7e32cbb90056c9d';
 
+/* Audit M2W: microservico isca-digital */
+const GROQ_API   = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const OWNER_EMAIL = 'comercial@m2w-ai.com';
+
 // Custom attributes to auto-create on cold start (Brevo ignores 400 if already exists)
 const CUSTOM_ATTRS = ['PLATAFORMA', 'BUDGET', 'SETOR', 'VOLUME_ATUAL', 'SITE_URL', 'REDES_SOCIAIS', 'REFERENCIAS'];
 let attrsReady = false;
@@ -317,12 +322,19 @@ function buildFollowHtml14(first) {
 // ── Main handler ─────────────────────────────────────────────────────────────
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS });
     }
     if (request.method !== 'POST') {
       return new Response('Method Not Allowed', { status: 405, headers: CORS });
+    }
+
+    const url = new URL(request.url);
+
+    /* ── Endpoint /audit: gera diagnostico via Llama, salva em Supabase, envia 2 emails ── */
+    if (url.pathname === '/audit') {
+      return handleAudit(request, env, ctx);
     }
 
     let body;
@@ -669,4 +681,426 @@ function json(data, status = 200) {
     status,
     headers: { ...CORS, 'Content-Type': 'application/json' },
   });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * AUDIT M2W — Isca digital
+ *
+ * Fluxo:
+ *   1. Lead submete calculadora -> POST /audit { nome, email, site, calc, lang }
+ *   2. Worker salva lead em Supabase + Brevo (atualiza contact + cria deal)
+ *   3. Worker retorna 200 imediato (UX rapida); enfileira evaluacao via ctx.waitUntil
+ *   4. Em background: chama Llama 3.3-70b 2x (lead-facing + owner-facing)
+ *   5. Persiste evaluations em Supabase
+ *   6. Envia email para o LEAD com a versao pain-pointing (CTA = call Calendly)
+ *   7. Envia email para SILVIO (owner) com diagnostico completo + proposta financeira
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+async function handleAudit(request, env, ctx) {
+  let payload;
+  try { payload = await request.json(); }
+  catch { return json({ ok: false, error: 'invalid_json' }, 400); }
+
+  const {
+    nome = '', email = '', site = '', redes = '', referencias = '',
+    empresa = '', whatsapp = '', servico = 'Audit M2W',
+    source = 'audit', lang = 'pt', calc = {},
+  } = payload;
+
+  if (!email || !nome) {
+    return json({ ok: false, error: 'missing_fields' }, 400);
+  }
+
+  /* 1) Insert/upsert no Supabase */
+  let supabaseLeadId = null;
+  let supabaseErr = null;
+  try {
+    const sb = await supabaseUpsertLead(env, {
+      nome, email, empresa, whatsapp, site, redes, referencias,
+      servico, source, lang, calc,
+    });
+    supabaseLeadId = sb?.id || null;
+    if (!supabaseLeadId) supabaseErr = sb?.error || 'no_id_returned';
+  } catch (e) {
+    supabaseErr = e.message;
+    console.error('supabase upsert ex', e.message);
+  }
+
+  /* 2) Forward para o fluxo Brevo normal (contact + deal + welcome email curto) */
+  const brevoTask = forwardToBrevo(env, {
+    nome, email, empresa, whatsapp, site, redes, referencias, servico,
+    mensagem: `[Audit] source=${source} | calc=${JSON.stringify(calc)}`,
+  });
+
+  /* 3) Enfileirar evaluacao Llama em background */
+  ctx.waitUntil(
+    runEvaluationAndDispatch(env, {
+      supabaseLeadId,
+      nome, email, site, redes, referencias, empresa, lang, calc,
+    }).catch(e => console.error('eval pipeline ex', e.message))
+  );
+
+  /* 4) Aguarda Brevo brevo apenas pro response (sem bloquear eval) */
+  const brevoResult = await brevoTask.catch(e => ({ error: e.message }));
+
+  return json({
+    ok: true,
+    supabaseLeadId,
+    supabaseErr: supabaseErr || undefined,
+    brevoContactId: brevoResult?.contactId,
+    brevoDealId:    brevoResult?.dealId,
+    message: 'Audit enfileirado. Email chega em <24h.',
+  });
+}
+
+/* Reaproveita pipeline existente: chama o handler principal via fetch interno
+ * simplificado — cria contact + deal no Brevo */
+async function forwardToBrevo(env, lead) {
+  const key = env.BREVO_API_KEY;
+  if (!key) return { error: 'no_brevo_key' };
+  await ensureAttributes(key);
+  const parts = lead.nome.trim().split(' ');
+  const first = parts[0] || '';
+  const last  = parts.slice(1).join(' ') || '';
+
+  let contactId = null, dealId = null;
+  try {
+    const res = await brevoPost(key, '/contacts', {
+      email: lead.email,
+      attributes: {
+        FIRSTNAME: first, LASTNAME: last, SMS: lead.whatsapp,
+        EMPRESA: lead.empresa, SERVICO: lead.servico, ORIGEM: 'audit-m2w',
+        SITE_URL: lead.site, REDES_SOCIAIS: lead.redes, REFERENCIAS: lead.referencias,
+      },
+      listIds: [LIST_ID],
+      updateEnabled: true,
+    });
+    if (res.status === 201) contactId = (await res.json()).id ?? null;
+    else if (res.status === 204) {
+      const r = await brevoGet(key, `/contacts/${encodeURIComponent(lead.email)}`);
+      if (r.ok) contactId = (await r.json()).id ?? null;
+    }
+  } catch (e) { console.error('audit brevo contact ex', e.message); }
+
+  try {
+    const dr = await brevoPost(key, '/crm/deals', {
+      name: `Audit · ${lead.nome}${lead.servico ? ' · ' + lead.servico : ''}`,
+      stageId: STAGE_NOVO,
+      pipelineId: PIPELINE_ID,
+      attributes: {
+        deal_description: [
+          `Nome: ${lead.nome}`,
+          `Email: ${lead.email}`,
+          lead.whatsapp && `WhatsApp: ${lead.whatsapp}`,
+          lead.site     && `Site: ${lead.site}`,
+          lead.redes    && `Redes: ${lead.redes}`,
+          lead.empresa  && `Empresa: ${lead.empresa}`,
+          `[ORIGEM] Audit M2W (calculadora)`,
+          lead.mensagem,
+        ].filter(Boolean).join(' | '),
+      },
+    });
+    if (dr.ok) dealId = (await dr.json()).id ?? null;
+  } catch (e) { console.error('audit brevo deal ex', e.message); }
+
+  if (contactId && dealId) {
+    brevoPatch(key, `/crm/deals/${dealId}/link-unlink-contacts`,
+      { linkContactIds: [contactId] }).catch(() => {});
+  }
+
+  return { contactId, dealId };
+}
+
+/* ── Supabase REST helpers ─────────────────────────────────────────────────── */
+
+async function supabaseFetch(env, method, path, body) {
+  const url = env.SUPABASE_URL;
+  const key = env.SUPABASE_SERVICE_KEY;
+  if (!url || !key) throw new Error('supabase_not_configured');
+  const r = await fetch(`${url}/rest/v1${path}`, {
+    method,
+    headers: {
+      'apikey': key,
+      'Authorization': `Bearer ${key}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation,resolution=merge-duplicates',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error(`supabase ${method} ${path} ${r.status}: ${t.slice(0, 240)}`);
+  }
+  return r.json().catch(() => null);
+}
+
+async function supabaseUpsertLead(env, lead) {
+  const row = await supabaseFetch(env, 'POST', '/leads?on_conflict=email', {
+    email:        lead.email,
+    nome:         lead.nome,
+    empresa:      lead.empresa || null,
+    whatsapp:     lead.whatsapp || null,
+    site:         lead.site || null,
+    redes:        lead.redes || null,
+    referencias:  lead.referencias || null,
+    servico:      lead.servico || null,
+    source:       lead.source || 'audit',
+    lang:         lead.lang || 'pt',
+    calc:         lead.calc || null,
+  });
+  return Array.isArray(row) ? row[0] : row;
+}
+
+async function supabaseInsertEvaluation(env, evaluation) {
+  return supabaseFetch(env, 'POST', '/evaluations', evaluation);
+}
+
+async function supabaseInsertEvent(env, leadId, type, payload) {
+  if (!leadId) return null;
+  return supabaseFetch(env, 'POST', '/events', { lead_id: leadId, type, payload }).catch(() => null);
+}
+
+/* ── Llama 3.3-70b: gera audit lead-facing + owner-facing ──────────────────── */
+
+async function callGroq(env, systemPrompt, userPrompt, maxTokens = 1200) {
+  const key = env.GROQ_API_KEY;
+  if (!key) throw new Error('groq_not_configured');
+  const r = await fetch(GROQ_API, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user',   content: userPrompt },
+      ],
+      max_tokens: maxTokens,
+      temperature: 0.55,
+    }),
+  });
+  if (!r.ok) throw new Error(`groq ${r.status}: ${(await r.text()).slice(0, 200)}`);
+  const data = await r.json();
+  return data.choices?.[0]?.message?.content || '';
+}
+
+function buildLeadPrompt(lead) {
+  const calc = lead.calc || {};
+  return `Voce e o sistema de Audit M2W. Sua missao: gerar um diagnostico curto e impactante PARA O LEAD que aponta APENAS PROBLEMAS criticos.
+
+REGRAS DURAS:
+- NUNCA mencione preco, plano M2W ou solucao especifica.
+- NUNCA prometa resolucao; APONTE problemas com clareza cirurgica.
+- 3 problemas, nao mais.
+- Cada problema tem: titulo curto (max 8 palavras), 2-3 linhas de explicacao com numero/consequencia.
+- Tom: parceiro tecnico que mostra o invisivel. Especifico, nao generico.
+- SEM em dash (use ponto, virgula, dois pontos).
+- Encerra com 1 paragrafo que prepara para a CTA: agendar call com Silvio.
+- Saida em MARKDOWN simples (## titulos, **negrito**, listas com -).
+- Idioma: ${lead.lang === 'en' ? 'INGLES' : lead.lang === 'es' ? 'ESPANHOL' : 'PORTUGUES-BR'}.
+
+DADOS DO LEAD:
+- Nome: ${lead.nome}
+- Site/Handle: ${lead.site || 'nao informado'}
+- Empresa: ${lead.empresa || 'nao informado'}
+- Setor inferido: ${calc.setor || 'a inferir do site/handle'}
+- Volume mensal desejado: ${calc.volume_posts_mes || '?'} posts
+- Modelo atual: ${calc.modelo_atual || '?'}
+- Ticket medio do produto: R$${calc.ticket_medio || '?'}
+- Custo atual estimado: R$${calc.custo_atual_estimado || '?'}/mes
+
+ESTRUTURA OBRIGATORIA DO MARKDOWN:
+
+# Audit M2W para ${lead.nome}
+
+[1 paragrafo de abertura, max 3 linhas, contextualizando o que voce analisou. Mencione o nome dele.]
+
+## Problema 1 · [titulo curto]
+[2-3 linhas com numero/consequencia especifica baseada nos dados acima.]
+
+## Problema 2 · [titulo curto]
+[idem]
+
+## Problema 3 · [titulo curto]
+[idem]
+
+## O que isso significa
+[1 paragrafo de 3-4 linhas que conecta os 3 problemas a um custo composto (oportunidade, CAC, perda de janela competitiva). Termina preparando o terreno para a CTA.]
+
+[NAO insira a CTA, ela e adicionada pelo template do email.]`;
+}
+
+function buildOwnerPrompt(lead) {
+  const calc = lead.calc || {};
+  return `Voce e o sistema interno M2W. Gera para o Silvio (founder) o briefing completo de venda para este lead. Tudo que ele precisa para fechar.
+
+ESTRUTURA OBRIGATORIA:
+
+# Briefing comercial · ${lead.nome}
+
+## 1. Perfil
+- Nome: ${lead.nome}
+- Email: ${lead.email}
+- Site/Handle: ${lead.site || 'nao informado'}
+- Empresa: ${lead.empresa || 'nao informado'}
+- Setor inferido: [deduza do site/handle e calc.modelo_atual]
+- Maturidade digital: [baixa/media/alta com 1 frase de justificativa]
+- ICP fit: [forte/medio/fraco com 1 frase]
+
+## 2. Numeros declarados
+- Volume desejado: ${calc.volume_posts_mes || '?'} posts/mes
+- Modelo atual: ${calc.modelo_atual || '?'}
+- Ticket medio: R$${calc.ticket_medio || '?'}
+- Custo atual estimado: R$${calc.custo_atual_estimado || '?'}/mes
+- Plano M2W recomendado pela calculadora: ${calc.plano_m2w_recomendado || '?'} (R$${calc.custo_m2w || '?'}/mes)
+- Economia projetada: R$${calc.economia_mensal || '?'}/mes (R$${calc.economia_anual || '?'}/ano)
+
+## 3. Problemas reais (vista interna)
+[Liste 3-5 problemas concretos com base nos dados. Mais cru que a versao do lead. Inclua riscos invisiveis que o lead nao percebeu.]
+
+## 4. Solucao recomendada
+- Plano principal: [especifique exato, com SKU/nome]
+- Add-ons sugeridos: [se aplicavel]
+- Justificativa em 3 linhas: [por que esse plano resolve os 3-5 problemas acima]
+
+## 5. Proposta financeira sugerida
+- Setup: [R$ ou incluido]
+- Mensalidade: R$X
+- Contrato: 90 dias minimo / 12 meses com desconto
+- Garantia: ROI 1o trimestre ou continua sem custo
+- Ticket anual: R$X
+- Margem estimada: [%]
+
+## 6. Como abrir a call
+- Gancho de abertura: 1 frase usando algo especifico do site/handle/numeros
+- Objeção mais provavel: [com resposta pronta]
+- Fechamento sugerido: [proposta concreta na 1a call ou via email pos-call]
+
+## 7. Score interno
+- Lead score: 0-100 com 1 frase de justificativa
+- Prioridade: [alta/media/baixa]
+- Prazo recomendado de followup: [hoje/24h/48h/semana]
+
+DADOS DO LEAD:
+- Nome: ${lead.nome}
+- Email: ${lead.email}
+- Site/Handle: ${lead.site || 'nao informado'}
+- Empresa: ${lead.empresa || 'nao informado'}
+- Redes: ${lead.redes || 'nao informado'}
+- Referencias citadas: ${lead.referencias || 'nao informado'}
+- Calculadora: ${JSON.stringify(calc, null, 2)}
+
+REGRAS:
+- Idioma: SEMPRE PORTUGUES-BR (o briefing e interno).
+- Numeros reais, sem inventar.
+- Saida em MARKDOWN simples.
+- Seja cirurgico. Silvio le rapido, quer dado, nao prosa.`;
+}
+
+async function runEvaluationAndDispatch(env, ctx) {
+  const startedAt = Date.now();
+  await supabaseInsertEvent(env, ctx.supabaseLeadId, 'audit_queued', { lang: ctx.lang });
+
+  /* Roda Llama 2x em paralelo */
+  const [leadAudit, ownerBriefing] = await Promise.all([
+    callGroq(env, 'Audit M2W gerador de versao publica.', buildLeadPrompt(ctx), 900),
+    callGroq(env, 'Audit M2W gerador de briefing interno.', buildOwnerPrompt(ctx), 1400),
+  ]);
+
+  /* Persiste em Supabase (evaluations) */
+  await supabaseInsertEvaluation(env, {
+    lead_id:        ctx.supabaseLeadId,
+    lead_version:   leadAudit,
+    owner_version:  ownerBriefing,
+    llama_model:    GROQ_MODEL,
+    status:         'generated',
+  }).catch(e => console.error('eval insert', e.message));
+
+  /* Envia 2 emails */
+  const key = env.BREVO_API_KEY;
+  if (key) {
+    const leadHtml  = buildLeadAuditEmail(ctx.nome, leadAudit, ctx.lang);
+    const ownerHtml = buildOwnerBriefingEmail(ctx.nome, ctx.email, ownerBriefing, ctx.calc);
+
+    await Promise.all([
+      brevoPost(key, '/smtp/email', {
+        sender:      { email: OWNER_EMAIL, name: 'Silvio Correia Filho · M2W' },
+        to:          [{ email: ctx.email, name: ctx.nome }],
+        subject:     `Audit M2W · ${ctx.nome}: 3 problemas identificados`,
+        htmlContent: leadHtml,
+      }).then(r => console.log('lead audit sent', r.status)),
+      brevoPost(key, '/smtp/email', {
+        sender:      { email: OWNER_EMAIL, name: 'Audit M2W (sistema)' },
+        to:          [{ email: OWNER_EMAIL, name: 'Silvio Correia Filho' }],
+        subject:     `[Briefing] ${ctx.nome} · ${ctx.email}`,
+        htmlContent: ownerHtml,
+      }).then(r => console.log('owner briefing sent', r.status)),
+    ]).catch(e => console.error('audit emails ex', e.message));
+  }
+
+  await supabaseInsertEvent(env, ctx.supabaseLeadId, 'audit_dispatched', {
+    duration_ms: Date.now() - startedAt,
+  });
+}
+
+/* ── Email templates pro audit ─────────────────────────────────────────────── */
+
+function mdToHtml(md) {
+  /* Conversor minimo markdown -> HTML pra email */
+  let s = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  s = s.replace(/^# (.+)$/gm,  `<h1 style="font-family:${MAIL_FONT_D};font-style:italic;font-weight:400;font-size:32px;color:${MAIL_INK};margin:0 0 24px;letter-spacing:-0.02em;line-height:1.15;">$1</h1>`);
+  s = s.replace(/^## (.+)$/gm, `<h2 style="font-family:${MAIL_FONT_D};font-style:italic;font-weight:400;font-size:20px;color:${MAIL_GOLD};margin:28px 0 10px;letter-spacing:-0.01em;line-height:1.25;">$1</h2>`);
+  s = s.replace(/^### (.+)$/gm, `<h3 style="font-family:${MAIL_FONT_M};font-size:10px;font-weight:500;letter-spacing:3.5px;text-transform:uppercase;color:${MAIL_GOLD};margin:24px 0 8px;">$1</h3>`);
+  s = s.replace(/\*\*(.+?)\*\*/g, `<strong style="color:${MAIL_INK};font-weight:600;">$1</strong>`);
+  s = s.replace(/^- (.+)$/gm, `<li style="margin-bottom:4px;color:${MAIL_BODY};">$1</li>`);
+  s = s.replace(/(<li[^>]*>.*?<\/li>\n?)+/gs, m => `<ul style="margin:8px 0 16px;padding-left:18px;font-size:14px;line-height:1.7;">${m}</ul>`);
+  s = s.split(/\n\n+/).map(p =>
+    p.startsWith('<h') || p.startsWith('<ul') || p.startsWith('<li')
+      ? p
+      : `<p style="margin:0 0 14px;font-size:15px;line-height:1.78;color:${MAIL_BODY};">${p.replace(/\n/g, '<br>')}</p>`
+  ).join('\n');
+  return s;
+}
+
+function buildLeadAuditEmail(nome, auditMd, lang) {
+  const first = htmlEscape((nome.split(' ')[0] || nome));
+  const ctaLabel = lang === 'en' ? 'Schedule 15min with Silvio' : lang === 'es' ? 'Agendar 15min con Silvio' : 'Agendar 15min com Silvio';
+  const ctaUrl   = 'https://calendly.com/silviofilhosf/nova-reuniao';
+  const subject  = lang === 'en' ? `M2W Audit, ${first}` : lang === 'es' ? `Audit M2W, ${first}` : `Audit M2W, ${first}`;
+
+  const content = `
+    ${mdToHtml(auditMd)}
+
+    <div style="margin:36px 0 16px;padding:24px;background:rgba(200,169,126,0.05);border:1px solid rgba(200,169,126,0.25);border-radius:8px;">
+      <p style="margin:0 0 14px;font-family:${MAIL_FONT_M};font-size:10px;font-weight:500;letter-spacing:3.5px;text-transform:uppercase;color:${MAIL_GOLD};">Proximo passo</p>
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:${MAIL_BODY};">Esses 3 problemas tem solucao concreta. Em 15 minutos com o Silvio voce sai com plano, prazo e proposta especifica pro seu caso. Sem compromisso.</p>
+      ${ctaSolid(ctaLabel, ctaUrl)}
+    </div>`;
+
+  return emailShell(subject, 'Audit M2W', content);
+}
+
+function buildOwnerBriefingEmail(nome, email, briefingMd, calc) {
+  const f = htmlEscape(nome);
+  const e = htmlEscape(email);
+  const calcSummary = calc ? `
+    <div style="background:#0a0a0a;border:1px solid ${MAIL_RULE};padding:18px 22px;margin:0 0 24px;border-radius:6px;">
+      <p style="margin:0 0 8px;font-family:${MAIL_FONT_M};font-size:9px;font-weight:500;letter-spacing:3.5px;text-transform:uppercase;color:${MAIL_GOLD};">Dados da calculadora</p>
+      <p style="margin:0;font-size:12px;line-height:1.7;color:${MAIL_BODY};font-family:${MAIL_FONT_M};">
+        Vol: <strong style="color:${MAIL_INK};">${calc.volume_posts_mes || '?'}</strong> posts/mes &middot;
+        Modelo: <strong style="color:${MAIL_INK};">${calc.modelo_atual || '?'}</strong> &middot;
+        Ticket: <strong style="color:${MAIL_INK};">R$${calc.ticket_medio || '?'}</strong><br>
+        Custo atual: <strong style="color:#f87171;">R$${calc.custo_atual_estimado || '?'}/mes</strong> &middot;
+        Plano: <strong style="color:${MAIL_GOLD};">${calc.plano_m2w_recomendado || '?'} R$${calc.custo_m2w || '?'}</strong> &middot;
+        Economia: <strong style="color:${MAIL_GOLD};">R$${calc.economia_mensal || '?'}/mes</strong>
+      </p>
+    </div>` : '';
+
+  const content = `
+    <p style="margin:0 0 8px;font-family:${MAIL_FONT_M};font-size:9px;font-weight:500;letter-spacing:5px;text-transform:uppercase;color:${MAIL_GOLD};">[interno] Briefing comercial</p>
+    <h1 class="hl" style="margin:0 0 8px;font-family:${MAIL_FONT_D};font-size:36px;font-weight:400;font-style:italic;line-height:1.1;color:${MAIL_INK};letter-spacing:-0.02em;">${f}</h1>
+    <p style="margin:0 0 28px;font-family:${MAIL_FONT_M};font-size:11px;color:${MAIL_QUIET};">${e}</p>
+    ${calcSummary}
+    ${mdToHtml(briefingMd)}`;
+
+  return emailShell('Briefing interno M2W', '[Interno] Briefing comercial', content, { hairlineColor: '#7a7a7a' });
 }
