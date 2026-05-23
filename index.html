@@ -1143,12 +1143,12 @@ footer{border-top:1px solid var(--g-brd);padding:1.75rem 2.5rem;display:flex;jus
 
         <div class="calc-q">
           <label class="calc-lbl" for="cticket"><span data-i18n="calc.q3">Ticket médio do seu produto</span> · <span id="cticket-out" class="calc-ticket-out">R$ 200</span></label>
-          <input type="range" id="cticket" min="30" max="2000" step="10" value="200" class="calc-slider" aria-label="Ticket médio do produto">
+          <input type="range" id="cticket" min="30" max="2000" step="10" value="200" class="calc-slider" aria-label="Ticket médio do produto em reais" aria-valuemin="30" aria-valuemax="2000" aria-valuenow="200" aria-valuetext="R$ 200">
           <div class="calc-slider-ticks"><span>R$30</span><span>R$500</span><span>R$1.000</span><span>R$2.000+</span></div>
         </div>
       </div>
 
-      <div class="calc-output" id="calc-output">
+      <div class="calc-output" id="calc-output" aria-live="polite" aria-atomic="false">
         <div class="calc-cmp">
           <div class="calc-cmp-col calc-cmp-old">
             <p class="calc-cmp-lbl" data-i18n="calc.outOld">Modelo atual</p>
@@ -1485,7 +1485,7 @@ const I18N = {
     'footer.copy':'© 2026 Marketing to Win · LGPD Compliant',
     'calc.kicker':'Ferramenta · Calcule sua economia',
     'calc.titleLine1':'Quanto você economizaria','calc.titleLine2':'trocando influencer humano por IA?',
-    'calc.intro':'Em menos de 30 segundos, sua conta vira um número real. Sem cadastro pra calcular — só pra receber o Audit M2W personalizado por email.',
+    'calc.intro':'Em menos de 30 segundos, sua conta vira um número real. Sem cadastro pra calcular, só pra receber o Audit M2W personalizado por email.',
     'calc.q1':'Volume de posts por mês que você precisa',
     'calc.vol1':'10 posts','calc.vol2':'30 posts ⭐','calc.vol3':'60 posts','calc.vol4':'100+ posts',
     'calc.q2':'Seu modelo atual de produção',
@@ -1618,7 +1618,7 @@ const I18N = {
     'footer.copy':'© 2026 Marketing to Win · LGPD & GDPR Compliant',
     'calc.kicker':'Tool · Calculate your savings',
     'calc.titleLine1':'How much would you save','calc.titleLine2':'switching from human influencer to AI?',
-    'calc.intro':'In under 30 seconds, your math becomes a real number. No signup to calculate — only to receive your personalized M2W Audit by email.',
+    'calc.intro':'In under 30 seconds, your math becomes a real number. No signup to calculate, only to receive your personalized M2W Audit by email.',
     'calc.q1':'Volume of posts per month you need',
     'calc.vol1':'10 posts','calc.vol2':'30 posts ⭐','calc.vol3':'60 posts','calc.vol4':'100+ posts',
     'calc.q2':'Your current production model',
@@ -1751,7 +1751,7 @@ const I18N = {
     'footer.copy':'© 2026 Marketing to Win · LGPD & GDPR Compliant',
     'calc.kicker':'Herramienta · Calcula tu ahorro',
     'calc.titleLine1':'¿Cuánto ahorrarías','calc.titleLine2':'cambiando influencer humano por IA?',
-    'calc.intro':'En menos de 30 segundos, tu cuenta se vuelve un número real. Sin registro para calcular — solo para recibir tu Audit M2W personalizado por email.',
+    'calc.intro':'En menos de 30 segundos, tu cuenta se vuelve un número real. Sin registro para calcular, solo para recibir tu Audit M2W personalizado por email.',
     'calc.q1':'Volumen de posts por mes que necesitas',
     'calc.vol1':'10 posts','calc.vol2':'30 posts ⭐','calc.vol3':'60 posts','calc.vol4':'100+ posts',
     'calc.q2':'Tu modelo actual de producción',
@@ -2002,6 +2002,8 @@ function buildTicker() {
     const ticket = parseInt(slider.value, 10);
 
     ticketOut.textContent = fmtBRL(ticket);
+    slider.setAttribute('aria-valuenow', String(ticket));
+    slider.setAttribute('aria-valuetext', fmtBRL(ticket));
 
     const oldMonth = COST_PER_POST[model](ticket) * vol;
     const plan = M2W_PLAN[vol] || M2W_PLAN[30];

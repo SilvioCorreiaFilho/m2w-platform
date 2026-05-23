@@ -223,16 +223,19 @@ function buildWelcomeHtml(first, servico, perfil, tier = 'morno') {
   const p = htmlEscape(perfil);
   const subj = `Re: ${first}, M2W`;
 
-  /* Bloco extra de deck PDF + cases pra leads morno/frio
-   * (quente recebe Audit Llama personalizado, nao precisa) */
+  /* Bloco extra de deck dinamico pra leads morno/frio
+   * (quente recebe Audit Llama personalizado, nao precisa)
+   * Deck e servido pelo proprio worker em /deck?nome=...&servico=... — 10 slides,
+   * 100% fiel ao DESIGN.md (deep, Cormorant italic 300, mono kickers, gradient final). */
+  const deckUrl = `https://m2w-leads.m2w-ai.workers.dev/deck?nome=${encodeURIComponent(first)}${s ? '&servico=' + encodeURIComponent(s) : ''}`;
   const deckBlock = tier !== 'quente' ? `
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 32px;">
       <tr><td style="border:1px solid ${MAIL_GOLD};border-radius:4px;padding:24px 28px;">
-        <p style="margin:0 0 8px;font-size:9px;font-weight:400;letter-spacing:5px;text-transform:uppercase;color:${MAIL_GOLD};font-family:${MAIL_FONT_M};">Material completo</p>
-        <p style="margin:0 0 16px;font-size:14px;font-weight:400;line-height:1.7;color:${MAIL_BODY};">Enquanto eu preparo seu contato, da uma olhada no deck M2W: cases reais (Mia Park, Luna Chen, Sofia Reyes), comparativo de custo vs influencer humano, e a tecnologia que esta por tras (LTX-2.3, Higgsfield, ComfyUI).</p>
+        <p style="margin:0 0 8px;font-size:9px;font-weight:400;letter-spacing:5px;text-transform:uppercase;color:${MAIL_GOLD};font-family:${MAIL_FONT_M};">Sua apresenta&ccedil;&atilde;o M2W</p>
+        <p style="margin:0 0 16px;font-size:14px;font-weight:400;line-height:1.7;color:${MAIL_BODY};">Preparei uma apresenta&ccedil;&atilde;o personalizada pro seu caso${s ? ', com destaque para ' + s : ''}. Dez slides: o problema, a matem&aacute;tica, cases reais (Mia Park, Luna Chen, Sofia Reyes), nossa stack (LTX-2.3, Higgsfield, ComfyUI), planos e garantia. Abre no navegador, Cmd+P salva PDF.</p>
         <table cellpadding="0" cellspacing="0" border="0">
           <tr><td style="border:1px solid ${MAIL_GOLD};">
-            <a href="https://m2w-ai.com/public/m2w-deck.pdf" style="display:block;padding:13px 28px;font-family:${MAIL_FONT_M};font-size:10px;font-weight:400;letter-spacing:4px;text-transform:uppercase;color:${MAIL_GOLD};text-decoration:none;white-space:nowrap;">Baixar deck completo &nbsp;&rarr;</a>
+            <a href="${deckUrl}" style="display:block;padding:13px 28px;font-family:${MAIL_FONT_M};font-size:10px;font-weight:400;letter-spacing:4px;text-transform:uppercase;color:${MAIL_GOLD};text-decoration:none;white-space:nowrap;">Ver apresenta&ccedil;&atilde;o &nbsp;&rarr;</a>
           </td></tr>
         </table>
       </td></tr>
@@ -376,13 +379,19 @@ export default {
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS });
     }
+
+    const url = new URL(request.url);
+
+    /* ── GET /deck: serve deck HTML printable (A4 landscape) personalizado ── */
+    if ((url.pathname === '/deck' || url.pathname === '/deck.html') && request.method === 'GET') {
+      return handleDeck(url, env);
+    }
+
     if (request.method !== 'POST') {
       return new Response('Method Not Allowed', { status: 405, headers: CORS });
     }
 
-    const url = new URL(request.url);
-
-    /* ── Endpoint /audit: gera diagnostico via Llama, salva em Supabase, envia 2 emails ── */
+    /* ── POST /audit: gera diagnostico via Llama, salva em Supabase, envia 2 emails ── */
     if (url.pathname === '/audit') {
       return handleAudit(request, env, ctx);
     }
@@ -1157,6 +1166,352 @@ function buildLeadAuditEmail(nome, auditMd, lang) {
     </div>`;
 
   return emailShell(subject, 'Audit M2W', content);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * /deck endpoint · HTML printable A4 landscape · 100% fiel ao DESIGN.md
+ *
+ * Query params (todos opcionais):
+ *   ?nome=X          — personaliza cover
+ *   ?servico=Y       — destaca plano sugerido
+ *   ?lang=pt|en|es   — idioma (default pt)
+ *
+ * Uso pelo lead: abre o link, navega slides no browser, ou Cmd+P -> salvar PDF.
+ * Layout: A4 landscape (297mm x 210mm), page-break-after por slide.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+function handleDeck(url, env) {
+  const nome    = url.searchParams.get('nome')    || '';
+  const servico = url.searchParams.get('servico') || '';
+  const lang    = url.searchParams.get('lang')    || 'pt';
+  const html = buildDeckHtml({ nome, servico, lang });
+  return new Response(html, {
+    status: 200,
+    headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' },
+  });
+}
+
+function buildDeckHtml({ nome, servico, lang }) {
+  const f = htmlEscape(nome ? (nome.split(' ')[0] || nome) : '');
+  const personalizadoSub = f
+    ? `Preparado exclusivamente para ${htmlEscape(f)}.`
+    : 'Influencers digitais de IA que vendem 24/7 no TikTok Shop, Ecommerce e para marcas.';
+
+  return `<!DOCTYPE html>
+<html lang="${lang === 'pt' ? 'pt-BR' : lang}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M2W AI Solutions${f ? ' · ' + f : ''} · Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&family=DM+Sans:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --deep:#06060e; --surf:#0b0b18; --surf2:#0e0e1f; --card:#0d0d11;
+  --p:#7c3aed; --pg:#8b5cf6; --pk:#d946ef; --cy:#22d3ee;
+  --txt:#f8fafc; --muted:#64748b; --rule:rgba(255,255,255,.08);
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'DM Sans',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--deep);color:var(--txt);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+@page{size:297mm 210mm;margin:0}
+
+/* Slide base: A4 landscape exact */
+.slide{
+  width:297mm; height:210mm;
+  background:var(--deep);
+  color:var(--txt);
+  padding:24mm 28mm;
+  position:relative;
+  page-break-after:always;
+  break-after:page;
+  display:flex; flex-direction:column;
+  overflow:hidden;
+}
+.slide:last-child{page-break-after:auto;break-after:auto}
+
+/* Type system */
+.kicker{font-family:var(--mono);font-size:9.5pt;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--pg);margin:0}
+.eyebrow{font-family:var(--mono);font-size:8.5pt;letter-spacing:.32em;text-transform:uppercase;color:var(--muted);margin:0}
+h1.display{font-family:var(--serif);font-style:italic;font-weight:300;font-size:64pt;line-height:.96;letter-spacing:-.02em;margin:8mm 0 6mm}
+h2.headline{font-family:var(--serif);font-style:italic;font-weight:300;font-size:40pt;line-height:1;letter-spacing:-.015em;margin:6mm 0 8mm}
+h3.title{font-family:var(--serif);font-style:italic;font-weight:300;font-size:20pt;line-height:1.1;margin:0 0 3mm;color:var(--txt)}
+p.body{font-family:var(--sans);font-size:11pt;line-height:1.7;color:#cdd5e0;margin:0 0 4mm;max-width:240mm}
+p.body strong{color:var(--txt);font-weight:600}
+.mono{font-family:var(--mono);font-size:9pt;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+
+/* Card / hairline */
+.card{border:1px solid var(--rule);background:var(--card);padding:8mm 9mm;border-radius:4pt}
+.cards-row{display:grid;gap:5mm}
+.cards-3{grid-template-columns:repeat(3,1fr)}
+.cards-4{grid-template-columns:repeat(4,1fr)}
+.cards-2{grid-template-columns:1fr 1fr}
+.divider-v{width:1px;background:var(--rule);height:100%}
+
+/* Layout helpers */
+.spread-grid{display:grid;grid-template-columns:1fr 1fr;gap:14mm;align-items:start}
+.foot{position:absolute;left:28mm;right:28mm;bottom:14mm;display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:7.5pt;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.32)}
+.foot a{color:rgba(255,255,255,.45);text-decoration:none}
+
+/* Stats */
+.stat{text-align:center}
+.stat-v{font-family:var(--serif);font-style:italic;font-weight:300;font-size:72pt;line-height:1;color:var(--txt)}
+.stat-v.violet{color:var(--pg)}
+.stat-l{font-family:var(--mono);font-size:8pt;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-top:3mm;max-width:55mm;margin-left:auto;margin-right:auto;line-height:1.5}
+
+/* Compare table */
+table.cmp{width:100%;border-collapse:collapse}
+table.cmp th,table.cmp td{padding:3mm 4mm;text-align:left;font-size:10pt;border-bottom:1px solid var(--rule)}
+table.cmp th{font-family:var(--mono);font-size:8.5pt;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:500}
+table.cmp td.muted{color:var(--muted);text-decoration:line-through}
+table.cmp td.hi{color:var(--pg);font-weight:500}
+
+/* Process steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:5mm;position:relative}
+.step{padding:6mm 5mm;border:1px solid var(--rule);border-radius:4pt}
+.step-n{font-family:var(--serif);font-style:italic;font-weight:300;font-size:36pt;color:var(--pg);line-height:1;margin-bottom:4mm}
+.step-l{font-family:var(--mono);font-size:8pt;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:2mm}
+.step-d{font-size:9.5pt;line-height:1.55;color:#cdd5e0}
+
+/* Persona cards */
+.persona{padding:6mm 5mm;border:1px solid var(--rule);border-radius:4pt;background:var(--card)}
+.persona-tag{font-family:var(--mono);font-size:7.5pt;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.persona-name{font-family:var(--serif);font-style:italic;font-weight:300;font-size:22pt;line-height:1.05;margin:3mm 0 2mm}
+.persona-niche{font-family:var(--mono);font-size:7.5pt;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.42);line-height:1.5}
+
+/* Pain numbered */
+.pain{display:grid;grid-template-columns:repeat(3,1fr);gap:5mm}
+.pain-card{padding:6mm 5mm;border:1px solid var(--rule);border-radius:4pt}
+.pain-n{font-family:var(--serif);font-style:italic;font-weight:300;font-size:36pt;color:var(--pg);opacity:.5;line-height:1;margin-bottom:3mm}
+.pain-t{font-size:11pt;font-weight:600;color:var(--txt);line-height:1.35;margin-bottom:3mm}
+.pain-d{font-size:9pt;line-height:1.55;color:var(--muted)}
+
+/* Math reveal */
+.math-old{font-family:var(--serif);font-style:italic;font-weight:300;font-size:32pt;color:var(--muted);text-decoration:line-through;text-decoration-color:rgba(248,113,113,.4);text-decoration-thickness:1px;line-height:1}
+.math-new{font-family:var(--serif);font-style:italic;font-weight:300;font-size:80pt;line-height:.9;color:var(--txt);background:linear-gradient(90deg,var(--pk),var(--pg) 50%,var(--cy));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.math-card{border:1px solid var(--rule);background:linear-gradient(135deg,rgba(139,92,246,.08),rgba(34,211,238,.04));padding:10mm;border-radius:4pt}
+
+/* Final CTA */
+.cta-final{text-align:center;padding-top:10mm}
+.cta-bigQ{font-family:var(--serif);font-style:italic;font-weight:300;font-size:88pt;line-height:.95;letter-spacing:-.02em;background:linear-gradient(90deg,var(--pk),var(--pg) 50%,var(--cy));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin:8mm 0 10mm}
+.cta-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:5mm;margin-top:10mm}
+.cta-cell{border:1px solid var(--rule);padding:6mm;border-radius:4pt;text-align:center}
+.cta-cell .mono{margin-bottom:3mm;display:block;color:var(--pg)}
+.cta-cell .v{font-size:11pt;color:var(--txt);word-break:break-all}
+
+/* Cover */
+.cover-cap{position:absolute;top:24mm;left:28mm;right:28mm;display:flex;justify-content:space-between;align-items:center}
+.cover-logo{font-family:var(--serif);font-style:italic;font-weight:300;font-size:18pt;letter-spacing:-.01em;color:var(--txt)}
+.cover-flag{font-family:var(--mono);font-size:8pt;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+.cover-body{position:absolute;left:28mm;bottom:34mm;max-width:200mm}
+.cover-title{font-family:var(--serif);font-style:italic;font-weight:300;font-size:88pt;line-height:.95;letter-spacing:-.02em;margin-bottom:6mm}
+.cover-sub{font-size:13pt;line-height:1.55;color:#cdd5e0;max-width:170mm}
+
+/* Print niceties */
+@media print{
+  body{background:var(--deep)}
+  .slide{box-shadow:none}
+  .nav-print{display:none}
+}
+.nav-print{position:fixed;bottom:12px;right:12px;z-index:1000;display:flex;gap:6px;font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);padding:8px 12px;border:1px solid var(--rule);border-radius:99px;color:#fff}
+.nav-print button{background:none;border:none;color:var(--pg);cursor:pointer;font:inherit}
+</style>
+</head>
+<body>
+
+<!-- ── 1 · COVER ─────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="cover-cap">
+    <div class="cover-logo">M2W <span style="color:var(--pg)">AI</span></div>
+    <div class="cover-flag">${f ? 'PROPOSTA · ' + htmlEscape(f).toUpperCase() : 'BR · LATAM · EUA · EU'}</div>
+  </div>
+  <div class="cover-body">
+    <p class="kicker">M2W AI SOLUTIONS · BRASÍLIA</p>
+    <h1 class="cover-title">A nova geração<br>de <em style="font-style:italic;color:var(--pg)">influência</em>.</h1>
+    <p class="cover-sub">${personalizadoSub}</p>
+  </div>
+  <div class="foot">
+    <span>m2w-ai.com</span>
+    <span>${new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' })}</span>
+  </div>
+</section>
+
+<!-- ── 2 · PROBLEMA + MATEMÁTICA ────────────────────────────── -->
+<section class="slide">
+  <p class="kicker">01 · A DOR + A MATEMÁTICA</p>
+  <h2 class="headline">Você já fez as contas?</h2>
+  <div class="spread-grid">
+    <div>
+      <p class="body">O modelo atual tem um custo invisível que raramente aparece no relatório. Cachê pago, conteúdo atrasado. Live cancelada de última hora. Agência entregando 8 posts/mês.</p>
+      <div class="pain" style="grid-template-columns:1fr;gap:3mm;margin-top:6mm">
+        <div class="pain-card"><div style="display:flex;align-items:baseline;gap:4mm"><span class="pain-n" style="font-size:24pt;margin:0">01</span><div><div class="pain-t">Cachê pago, briefing aprovado.</div><div class="pain-d">Conteúdo chega quando o criador "tiver tempo".</div></div></div></div>
+        <div class="pain-card"><div style="display:flex;align-items:baseline;gap:4mm"><span class="pain-n" style="font-size:24pt;margin:0">02</span><div><div class="pain-t">Live cancelada de última hora.</div><div class="pain-d">O influencer fechou com a sua concorrente.</div></div></div></div>
+        <div class="pain-card"><div style="display:flex;align-items:baseline;gap:4mm"><span class="pain-n" style="font-size:24pt;margin:0">03</span><div><div class="pain-t">8 posts/mês por R$30–255k.</div><div class="pain-d">Volume baixo, custo alto, ROI questionável.</div></div></div></div>
+      </div>
+    </div>
+    <div class="math-card">
+      <p class="kicker" style="color:var(--pg)">A MESMA ENTREGA</p>
+      <p class="math-old" style="margin:6mm 0">R$30.000 – R$255.000<span style="font-size:14pt;margin-left:3mm">/mês</span></p>
+      <p class="mono" style="margin:8mm 0 3mm;color:var(--txt)">M2W AI Solutions</p>
+      <p class="math-new">R$2.490</p>
+      <p class="mono" style="margin-top:4mm;color:var(--muted)">por mês · setup 48h · ROI em contrato</p>
+      <p style="font-family:var(--mono);font-size:8pt;letter-spacing:.18em;text-transform:uppercase;color:var(--pg);margin-top:8mm;padding-top:5mm;border-top:1px solid var(--rule)">Economia média 90%+</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── 3 · SOLUÇÃO ───────────────────────────────────────────── -->
+<section class="slide">
+  <p class="kicker">02 · A SOLUÇÃO</p>
+  <h2 class="headline">Três vetores. <em style="color:var(--pg)">Uma persona.</em></h2>
+  <p class="body" style="margin-bottom:10mm">Um único avatar de IA opera simultaneamente em três frentes de receita. Sem multiplicar custos, sem gerenciar múltiplos contratos.</p>
+  <div class="cards-row cards-3">
+    <div class="card" style="${servico==='TikTok Shop'?'border-color:var(--pg);box-shadow:0 0 20px rgba(139,92,246,.18)':''}">
+      <p class="mono" style="color:var(--pg)">TIKTOK SHOP</p>
+      <h3 class="title" style="margin-top:4mm">Live Commerce<br>& Vídeo Diário</h3>
+      <p class="body" style="font-size:9.5pt;margin-top:3mm">Lives automatizadas, vídeos de produto, conversão direta no checkout.</p>
+      <div style="margin-top:5mm;padding-top:4mm;border-top:1px solid var(--rule);display:flex;justify-content:space-between"><span class="mono" style="font-size:7.5pt">450% YoY</span><span class="mono" style="font-size:7.5pt">8.3% CONV</span><span class="mono" style="font-size:7.5pt">48H SETUP</span></div>
+    </div>
+    <div class="card" style="${servico==='Ecommerce'?'border-color:var(--pg);box-shadow:0 0 20px rgba(139,92,246,.18)':''}">
+      <p class="mono" style="color:var(--pg)">ECOMMERCE</p>
+      <h3 class="title" style="margin-top:4mm">Conteúdo de<br>Produto em Escala</h3>
+      <p class="body" style="font-size:9.5pt;margin-top:3mm">Catálogo transformado em vídeos de alta conversão. Tom de marca consistente.</p>
+      <div style="margin-top:5mm;padding-top:4mm;border-top:1px solid var(--rule);display:flex;justify-content:space-between"><span class="mono" style="font-size:7.5pt">92% RETENÇÃO</span><span class="mono" style="font-size:7.5pt">6.8% CONV</span><span class="mono" style="font-size:7.5pt">30D ENTREGA</span></div>
+    </div>
+    <div class="card" style="${servico==='Automação de Marketing'?'border-color:var(--pg);box-shadow:0 0 20px rgba(139,92,246,.18)':''}">
+      <p class="mono" style="color:var(--pg)">AUTOMAÇÃO</p>
+      <h3 class="title" style="margin-top:4mm">Pipeline Comercial<br>com IA</h3>
+      <p class="body" style="font-size:9.5pt;margin-top:3mm">Do briefing ao asset publicado, do lead ao fechamento. Tudo orquestrado.</p>
+      <div style="margin-top:5mm;padding-top:4mm;border-top:1px solid var(--rule);display:flex;justify-content:space-between"><span class="mono" style="font-size:7.5pt">3× OUTPUT</span><span class="mono" style="font-size:7.5pt">90% ECON</span><span class="mono" style="font-size:7.5pt">300% ROI</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 4 · PROCESSO ──────────────────────────────────────────── -->
+<section class="slide">
+  <p class="kicker">PROCESSO</p>
+  <h2 class="headline">Do briefing ao avatar publicando: <em style="color:var(--pg)">48h.</em></h2>
+  <p class="body" style="margin-bottom:10mm">Quatro etapas. Nenhuma burocracia. Seu avatar no ar em menos de dois dias úteis.</p>
+  <div class="steps">
+    <div class="step"><div class="step-n">01</div><div class="step-l">Briefing</div><div class="step-d">15 minutos de call. Definimos tom, persona, nicho e objetivos.</div></div>
+    <div class="step"><div class="step-n">02</div><div class="step-l">Setup do Avatar</div><div class="step-d">24h. Geração com LTX-2.3, Higgsfield e pipeline ComfyUI.</div></div>
+    <div class="step"><div class="step-n">03</div><div class="step-l">Calibragem</div><div class="step-d">12h. Ajuste fino de linguagem, estilo visual e identidade.</div></div>
+    <div class="step"><div class="step-n">04</div><div class="step-l">Publicação</div><div class="step-d">Instant. O avatar publica, engaja e converte. 24/7.</div></div>
+  </div>
+</section>
+
+<!-- ── 5 · STACK ─────────────────────────────────────────────── -->
+<section class="slide">
+  <p class="kicker">STACK GENERATIVA</p>
+  <h2 class="headline">Tecnologia <em style="color:var(--pg)">visível</em>, não escondida.</h2>
+  <p class="body" style="margin-bottom:10mm">Não usamos caixas-pretas. Cada camada é selecionada por performance comprovada em geração de conteúdo comercial em escala.</p>
+  <div class="cards-row cards-3">
+    <div class="card"><p class="mono" style="color:var(--pg)">VIDEO GEN</p><h3 class="title" style="margin-top:4mm">LTX-2.3</h3><p class="body" style="font-size:9.5pt;margin-top:3mm">Vídeo indistinguível de humano. Qualidade cinematográfica em resolução nativa para TikTok, Reels e YouTube Shorts.</p></div>
+    <div class="card"><p class="mono" style="color:var(--pg)">MOTION + LIP-SYNC</p><h3 class="title" style="margin-top:4mm">Higgsfield Seedance</h3><p class="body" style="font-size:9.5pt;margin-top:3mm">Lip-sync preciso e motion fidelity de alto nível. Movimentos naturais, expressões reais, sincronização perfeita em qualquer idioma.</p></div>
+    <div class="card"><p class="mono" style="color:var(--pg)">PIPELINE</p><h3 class="title" style="margin-top:4mm">ComfyUI</h3><p class="body" style="font-size:9.5pt;margin-top:3mm">Pipeline generativo customizado por marca. Fluxos exclusivos que garantem consistência visual e identidade única para cada cliente.</p></div>
+  </div>
+</section>
+
+<!-- ── 6 · PORTFOLIO ─────────────────────────────────────────── -->
+<section class="slide">
+  <p class="kicker">PORTFOLIO · INFLUENCERS DIGITAIS</p>
+  <h2 class="headline">Personas que <em style="color:var(--pg)">vendem.</em></h2>
+  <div class="cards-row cards-4" style="margin-top:10mm">
+    <div class="persona"><div class="persona-tag">TIKTOK SHOP · ATIVO</div><div class="persona-name">Mia Park</div><div class="persona-niche">K-Beauty<br>Lifestyle<br>Live Commerce</div><div style="margin-top:5mm;padding-top:4mm;border-top:1px solid var(--rule)"><div class="mono" style="color:var(--pg);font-size:7.5pt">8.3% conv · 450% growth</div></div></div>
+    <div class="persona"><div class="persona-tag">FASHION & LIFESTYLE</div><div class="persona-name">Luna Chen</div><div class="persona-niche">Moda<br>Tendências<br>Estilo de Vida</div></div>
+    <div class="persona"><div class="persona-tag">FITNESS & WELLNESS</div><div class="persona-name">Kai Santos</div><div class="persona-niche">Treino<br>Nutrição<br>Performance</div></div>
+    <div class="persona"><div class="persona-tag">BEAUTY & SKINCARE</div><div class="persona-name">Sofia Reyes</div><div class="persona-niche">Skincare<br>Bem-estar<br>Review</div></div>
+  </div>
+</section>
+
+<!-- ── 7 · STATS ─────────────────────────────────────────────── -->
+<section class="slide">
+  <p class="kicker">RESULTADOS REAIS</p>
+  <h2 class="headline">Os números que <em style="color:var(--pg)">importam.</em></h2>
+  <div class="cards-row" style="grid-template-columns:1fr 1px 1fr 1px 1fr;gap:0;margin-top:18mm;align-items:center">
+    <div class="stat"><div class="stat-v violet">450%</div><div class="stat-l">Crescimento médio TikTok Shop nos primeiros 6 meses</div></div>
+    <div class="divider-v" style="height:48mm;align-self:center"></div>
+    <div class="stat"><div class="stat-v">8.3%</div><div class="stat-l">Conversão média (mercado tradicional ~1-2%)</div></div>
+    <div class="divider-v" style="height:48mm;align-self:center"></div>
+    <div class="stat"><div class="stat-v">90%</div><div class="stat-l">Economia vs micro-influencer humano equivalente</div></div>
+  </div>
+</section>
+
+<!-- ── 8 · COMPARATIVO + PLANOS ──────────────────────────────── -->
+<section class="slide">
+  <p class="kicker">INVESTIMENTO</p>
+  <h2 class="headline">Mesmo trabalho. <em style="color:var(--pg)">Sem o cachê.</em></h2>
+  <div class="spread-grid" style="gap:10mm;align-items:start">
+    <div>
+      <table class="cmp">
+        <thead><tr><th></th><th>Humano</th><th>M2W</th></tr></thead>
+        <tbody>
+          <tr><td>Custo mensal</td><td class="muted">R$30–255k</td><td class="hi">R$2.490</td></tr>
+          <tr><td>Disponibilidade</td><td class="muted">Horário comercial</td><td class="hi">24/7</td></tr>
+          <tr><td>Cancelamento</td><td class="muted">Frequente</td><td class="hi">Nunca</td></tr>
+          <tr><td>Garantia ROI</td><td class="muted">Nenhuma</td><td class="hi">Em contrato</td></tr>
+          <tr><td>Setup</td><td class="muted">Semanas</td><td class="hi">48 horas</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <div class="cards-row" style="grid-template-columns:1fr 1fr;gap:4mm">
+        <div class="card" style="padding:5mm"><p class="mono" style="color:var(--pg);font-size:7.5pt">TIKTOK SHOP</p><h3 class="title" style="font-size:14pt;margin:3mm 0 2mm">R$2.490+</h3><p class="body" style="font-size:8.5pt;margin:0">Básico · Padrão · Premium</p></div>
+        <div class="card" style="padding:5mm"><p class="mono" style="color:var(--pg);font-size:7.5pt">ECOMMERCE</p><h3 class="title" style="font-size:14pt;margin:3mm 0 2mm">R$1.990+</h3><p class="body" style="font-size:8.5pt;margin:0">Básico · Padrão · Premium</p></div>
+        <div class="card" style="padding:5mm"><p class="mono" style="color:var(--pg);font-size:7.5pt">AUTOMAÇÃO</p><h3 class="title" style="font-size:14pt;margin:3mm 0 2mm">R$3.490+</h3><p class="body" style="font-size:8.5pt;margin:0">Básico · Padrão · Premium</p></div>
+        <div class="card" style="padding:5mm"><p class="mono" style="color:var(--pg);font-size:7.5pt">DEV GENERATIVO</p><h3 class="title" style="font-size:14pt;margin:3mm 0 2mm">R$4.900+</h3><p class="body" style="font-size:8.5pt;margin:0">Landing · Plataforma · Manutenção</p></div>
+      </div>
+      <p class="mono" style="text-align:center;margin-top:5mm;color:var(--muted);font-size:8pt">Pacote completo a partir de R$8.900/mês</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── 9 · GARANTIA + URGÊNCIA ──────────────────────────────── -->
+<section class="slide">
+  <p class="kicker">GARANTIA + JANELA</p>
+  <h2 class="headline">Setup em 48h. ROI no 1º trimestre. <em style="color:var(--pg)">Ou continuamos sem custo.</em></h2>
+  <div class="spread-grid" style="gap:14mm;margin-top:10mm">
+    <div>
+      <p class="kicker" style="color:var(--pg);font-size:8.5pt;margin-bottom:4mm">GARANTIA EM CONTRATO</p>
+      <p class="body">Setup básico rodando em 48 horas após aprovação, ou devolvemos. ROI não atingido no 1º trimestre? Continuamos sem custo adicional até atingir.</p>
+      <p class="body" style="margin-top:6mm;font-style:italic;color:var(--muted)">A garantia existe porque a metodologia funciona. Se não fosse assim, não faríamos essa oferta.</p>
+    </div>
+    <div class="card" style="background:linear-gradient(135deg,rgba(139,92,246,.06),rgba(217,70,239,.04));padding:10mm">
+      <p class="kicker" style="color:var(--pk)">JANELA DE MERCADO</p>
+      <p class="stat-v" style="font-size:54pt;margin:6mm 0">450%</p>
+      <p class="mono" style="color:var(--txt);font-size:9pt">crescimento do mercado em 12 meses</p>
+      <p class="body" style="margin-top:8mm;font-size:10pt">Marcas que entraram primeiro têm dados de algoritmo e presença que as que chegam depois <strong>demoram 6 a 12 meses para recuperar.</strong></p>
+      <p class="mono" style="margin-top:6mm;color:var(--pg);font-size:8pt">Se você está lendo isso, a janela ainda está aberta.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── 10 · CTA + CONTATO ────────────────────────────────────── -->
+<section class="slide">
+  <div class="cta-final">
+    <p class="kicker">PRÓXIMO PASSO</p>
+    <h2 class="cta-bigQ">Por que esperar?</h2>
+    <p class="body" style="font-size:13pt;max-width:170mm;margin:0 auto">15 minutos com o Silvio · proposta personalizada em 24h · sem compromisso.</p>
+    <div class="cta-meta">
+      <div class="cta-cell"><span class="mono">AGENDAR CALL</span><span class="v">calendly.com/silviofilhosf<br>/nova-reuniao</span></div>
+      <div class="cta-cell"><span class="mono">EMAIL DIRETO</span><span class="v">comercial@m2w-ai.com</span></div>
+      <div class="cta-cell"><span class="mono">WHATSAPP</span><span class="v">+55 61 99153-3243</span></div>
+    </div>
+    <p class="mono" style="margin-top:18mm;color:var(--muted);font-size:8pt">M2W AI SOLUTIONS · BRASÍLIA, DF · m2w-ai.com</p>
+  </div>
+</section>
+
+<!-- Floating nav for screen viewing -->
+<div class="nav-print">
+  <span>10 slides</span>
+  <span style="opacity:.3">·</span>
+  <button onclick="window.print()">Cmd/Ctrl+P · salvar PDF</button>
+</div>
+</body>
+</html>`;
 }
 
 function buildOwnerBriefingEmail(nome, email, briefingMd, calc) {
