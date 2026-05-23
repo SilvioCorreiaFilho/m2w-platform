@@ -1304,11 +1304,22 @@ table.cmp td.hi{color:var(--pg);font-weight:500}
 
 /* Cover */
 .cover-cap{position:absolute;top:24mm;left:28mm;right:28mm;display:flex;justify-content:space-between;align-items:center}
-.cover-logo{font-family:var(--serif);font-style:italic;font-weight:300;font-size:18pt;letter-spacing:-.01em;color:var(--txt)}
 .cover-flag{font-family:var(--mono);font-size:8pt;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
 .cover-body{position:absolute;left:28mm;bottom:34mm;max-width:200mm}
-.cover-title{font-family:var(--serif);font-style:italic;font-weight:300;font-size:88pt;line-height:.95;letter-spacing:-.02em;margin-bottom:6mm}
-.cover-sub{font-size:13pt;line-height:1.55;color:#cdd5e0;max-width:170mm}
+.cover-title{font-family:var(--serif);font-style:italic;font-weight:300;font-size:88pt;line-height:.95;letter-spacing:-.02em;margin-bottom:6mm;color:var(--txt)}
+.cover-sub{font-size:13pt;line-height:1.55;color:rgba(255,255,255,.92);max-width:170mm}
+
+/* Cover cinematica · photo + overlay stack (matches landing hero) */
+.cover-hero{padding:0;background:#000}
+.cover-hero .cover-cap{padding:0;top:24mm;left:28mm;right:28mm}
+.cover-hero .cover-body{padding:0;left:28mm;bottom:30mm}
+.cover-photo{position:absolute;inset:0;background-image:url('https://m2w-ai.com/public/portfolio/mia-park-hero.jpg');background-size:cover;background-position:center 22%;filter:contrast(1.06) saturate(1.08) brightness(.92);z-index:0}
+.persona-thumb{width:100%;aspect-ratio:3/4;background-size:cover;background-position:center top;border-radius:3pt 3pt 0 0;margin:-6mm -5mm 4mm -5mm;filter:contrast(1.05) saturate(1.05) brightness(.95)}
+.cover-overlay{position:absolute;inset:0;pointer-events:none;z-index:1}
+.cover-ov-tint{background:rgba(6,6,14,.18);mix-blend-mode:multiply}
+.cover-ov-left{background:linear-gradient(100deg,rgba(6,6,14,.92) 0%,rgba(6,6,14,.68) 26%,rgba(6,6,14,.22) 52%,transparent 72%)}
+.cover-ov-bottom{background:linear-gradient(to top,#06060e 0%,rgba(6,6,14,.85) 18%,rgba(6,6,14,.35) 45%,transparent 72%)}
+.cover-ov-grain{background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");background-size:200px;opacity:.06;mix-blend-mode:overlay}
 
 /* Print niceties */
 @media print{
@@ -1322,18 +1333,26 @@ table.cmp td.hi{color:var(--pg);font-weight:500}
 </head>
 <body>
 
-<!-- ── 1 · COVER ─────────────────────────────────────────────── -->
-<section class="slide">
-  <div class="cover-cap">
-    <div class="cover-logo">M2W <span style="color:var(--pg)">AI</span></div>
-    <div class="cover-flag">${f ? 'PROPOSTA · ' + htmlEscape(f).toUpperCase() : 'BR · LATAM · EUA · EU'}</div>
+<!-- ── 1 · COVER (cinemática com foto de fundo + overlay) ─────── -->
+<section class="slide cover-hero">
+  <!-- Hero photo edge-to-edge -->
+  <div class="cover-photo"></div>
+  <!-- Overlay stack (matches landing hero): tint + bottom gradient + left gradient + grain -->
+  <div class="cover-overlay cover-ov-tint"></div>
+  <div class="cover-overlay cover-ov-left"></div>
+  <div class="cover-overlay cover-ov-bottom"></div>
+  <div class="cover-overlay cover-ov-grain"></div>
+  <!-- Content layer -->
+  <div class="cover-cap" style="z-index:10;position:relative">
+    <img src="https://m2w-ai.com/logo-white.png" alt="M2W AI Solutions" style="height:24pt;width:auto;opacity:.95">
+    <div class="cover-flag" style="color:rgba(255,255,255,.78);text-shadow:0 2px 12px rgba(0,0,0,.9)">${f ? 'PROPOSTA · ' + htmlEscape(f).toUpperCase() : 'BR · LATAM · EUA · EU'}</div>
   </div>
-  <div class="cover-body">
-    <p class="kicker">M2W AI SOLUTIONS · BRASÍLIA</p>
-    <h1 class="cover-title">A nova geração<br>de <em style="font-style:italic;color:var(--pg)">influência</em>.</h1>
-    <p class="cover-sub">${personalizadoSub}</p>
+  <div class="cover-body" style="z-index:10;position:relative">
+    <p class="kicker" style="text-shadow:0 1px 8px rgba(0,0,0,.9)">M2W AI SOLUTIONS · BRASÍLIA</p>
+    <h1 class="cover-title" style="text-shadow:0 4px 28px rgba(0,0,0,.85),0 1px 4px rgba(0,0,0,.7)">A nova geração<br>de <em style="font-style:italic;color:var(--pg);text-shadow:0 0 24px rgba(139,92,246,.75),0 4px 18px rgba(0,0,0,.9)">influência</em>.</h1>
+    <p class="cover-sub" style="text-shadow:0 2px 16px rgba(0,0,0,.95)">${personalizadoSub}</p>
   </div>
-  <div class="foot">
+  <div class="foot" style="z-index:10;color:rgba(255,255,255,.55)">
     <span>m2w-ai.com</span>
     <span>${new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' })}</span>
   </div>
@@ -1415,16 +1434,23 @@ table.cmp td.hi{color:var(--pg);font-weight:500}
   </div>
 </section>
 
-<!-- ── 6 · PORTFOLIO ─────────────────────────────────────────── -->
+<!-- ── 6 · PORTFOLIO (4 personas, featured Mia com foto) ─────── -->
 <section class="slide">
   <p class="kicker">PORTFOLIO · INFLUENCERS DIGITAIS</p>
   <h2 class="headline">Personas que <em style="color:var(--pg)">vendem.</em></h2>
-  <div class="cards-row cards-4" style="margin-top:10mm">
-    <div class="persona"><div class="persona-tag">TIKTOK SHOP · ATIVO</div><div class="persona-name">Mia Park</div><div class="persona-niche">K-Beauty<br>Lifestyle<br>Live Commerce</div><div style="margin-top:5mm;padding-top:4mm;border-top:1px solid var(--rule)"><div class="mono" style="color:var(--pg);font-size:7.5pt">8.3% conv · 450% growth</div></div></div>
+  <div class="cards-row cards-4" style="margin-top:8mm">
+    <div class="persona" style="border-color:var(--pg);box-shadow:0 0 18px rgba(139,92,246,.16);padding-top:0;overflow:hidden">
+      <div class="persona-thumb" style="background-image:url('https://m2w-ai.com/public/portfolio/mia-park-hero.jpg');background-position:center 18%"></div>
+      <div class="persona-tag" style="color:var(--pg)">TIKTOK SHOP · ATIVO</div>
+      <div class="persona-name">Mia Park</div>
+      <div class="persona-niche">K-Beauty<br>Lifestyle<br>Live Commerce</div>
+      <div style="margin-top:4mm;padding-top:3mm;border-top:1px solid var(--rule)"><div class="mono" style="color:var(--pg);font-size:7pt">8.3% conv · 450% growth</div></div>
+    </div>
     <div class="persona"><div class="persona-tag">FASHION & LIFESTYLE</div><div class="persona-name">Luna Chen</div><div class="persona-niche">Moda<br>Tendências<br>Estilo de Vida</div></div>
     <div class="persona"><div class="persona-tag">FITNESS & WELLNESS</div><div class="persona-name">Kai Santos</div><div class="persona-niche">Treino<br>Nutrição<br>Performance</div></div>
     <div class="persona"><div class="persona-tag">BEAUTY & SKINCARE</div><div class="persona-name">Sofia Reyes</div><div class="persona-niche">Skincare<br>Bem-estar<br>Review</div></div>
   </div>
+  <p class="mono" style="margin-top:6mm;color:var(--muted);font-size:7.5pt;text-align:center">4 personas ativas no portfolio · avatar exclusivo desenvolvido em até 14 dias</p>
 </section>
 
 <!-- ── 7 · STATS ─────────────────────────────────────────────── -->

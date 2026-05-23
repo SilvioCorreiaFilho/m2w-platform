@@ -459,8 +459,9 @@ async function getCalendlySlots(env, count = 5) {
   }
   if (!eventUri) throw new Error('No active event types found');
 
-  /* Janela: proximos 7 dias */
-  const now = new Date();
+  /* Janela: proximos 7 dias. Calendly exige strict-future,
+   * entao start = now + 60s pra eliminar race com clock skew. */
+  const now = new Date(Date.now() + 60 * 1000);
   const end = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
   const fmt = d => d.toISOString().slice(0, 19) + 'Z';
 
