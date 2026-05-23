@@ -514,7 +514,8 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 
 /* ═══ CALCULADORA / AUDIT M2W ═══════════════════════════════════════════════ */
 .calc-card{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1.1fr 1fr;gap:2.5rem;background:var(--glass);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--g-brd);border-radius:var(--r);padding:2.5rem;position:relative;overflow:hidden}
-@media(max-width:900px){.calc-card{grid-template-columns:1fr;gap:2rem;padding:2rem}}
+@media(max-width:900px){.calc-card{grid-template-columns:1fr;gap:2rem;padding:2rem;backdrop-filter:blur(8px) saturate(140%);-webkit-backdrop-filter:blur(8px) saturate(140%)}}
+@media(max-width:560px){.calc-card{padding:1.5rem;backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(255,255,255,.025)}}
 .calc-inputs{display:flex;flex-direction:column;gap:1.75rem}
 .calc-q{display:flex;flex-direction:column;gap:.75rem}
 .calc-lbl{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
@@ -535,6 +536,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 .calc-cmp-lbl{font-family:'JetBrains Mono',monospace;font-size:.5rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin:0 0 .5rem}
 .calc-cmp-val{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-weight:300;font-size:clamp(1.6rem,3vw,2.3rem);line-height:1;color:var(--txt);margin:0}
 .calc-cmp-old .calc-cmp-val{color:#f87171;text-decoration:line-through;text-decoration-color:rgba(248,113,113,.5);text-decoration-thickness:1px}
+.calc-cmp-new-val{color:var(--pg)}
 .calc-cmp-sub{font-family:'JetBrains Mono',monospace;font-size:.48rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:.4rem 0 0}
 .calc-cmp-arrow{font-size:1.4rem;color:var(--pg);font-weight:300;opacity:.6}
 .calc-savings{border-top:1px solid var(--g-brd);padding-top:1rem;display:flex;flex-direction:column;gap:.5rem}
@@ -555,8 +557,11 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 .calc-inp:focus{border-color:var(--pg);background:rgba(0,0,0,.5)}
 .calc-inp::placeholder{color:rgba(255,255,255,.4)}
 .calc-inp[aria-invalid="true"]{border-color:#f87171}
-.calc-gate-btn{width:100%;background:var(--grd);border:none;color:#fff;font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;padding:.95rem 1.5rem;border-radius:6px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;justify-content:center;gap:.65rem;box-shadow:0 0 24px rgba(168,85,247,.32);margin-top:.25rem}
-.calc-gate-btn:hover:not(:disabled){opacity:.92;transform:translateY(-1px);box-shadow:0 0 36px rgba(168,85,247,.5)}
+/* Required field indicator (P1 a11y fix) */
+.calc-inp-req{padding-right:1.6rem;background-image:radial-gradient(circle at calc(100% - .8rem) center,var(--pg) 1.5px,transparent 2px);background-repeat:no-repeat}
+.calc-inp-req:focus,.calc-inp-req:valid{background-image:none;padding-right:.9rem}
+.calc-gate-btn{width:100%;background:var(--pg);border:none;color:#fff;font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;padding:.95rem 1.5rem;border-radius:6px;cursor:pointer;transition:background .25s,transform .25s,box-shadow .25s;display:inline-flex;align-items:center;justify-content:center;gap:.65rem;box-shadow:0 0 20px rgba(139,92,246,.28);margin-top:.25rem}
+.calc-gate-btn:hover:not(:disabled){background:#9b6ef8;transform:translateY(-1px);box-shadow:0 0 32px rgba(139,92,246,.45)}
 .calc-gate-btn:disabled{opacity:.5;cursor:not-allowed}
 .calc-gate-micro{font-family:'JetBrains Mono',monospace;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.32);text-align:center;margin:0}
 .calc-success{display:none;padding:2rem 1rem;text-align:center}
@@ -1158,7 +1163,7 @@ footer{border-top:1px solid var(--g-brd);padding:1.75rem 2.5rem;display:flex;jus
           <div class="calc-cmp-arrow">→</div>
           <div class="calc-cmp-col calc-cmp-new">
             <p class="calc-cmp-lbl" data-i18n="calc.outM2w">Com M2W</p>
-            <p class="calc-cmp-val grd-t" id="calc-new-val">R$ 0</p>
+            <p class="calc-cmp-val calc-cmp-new-val" id="calc-new-val">R$ 0</p>
             <p class="calc-cmp-sub" id="calc-new-plan" data-i18n="calc.planBasico">Plano Básico</p>
           </div>
         </div>
@@ -1181,10 +1186,10 @@ footer{border-top:1px solid var(--g-brd);padding:1.75rem 2.5rem;display:flex;jus
         <!-- Audit gate (gera diagnóstico personalizado via IA + Llama) -->
         <form id="calc-form" class="calc-gate" novalidate>
           <p class="calc-gate-ttl" data-i18n="calc.gateTtl">Receba o Audit M2W da sua marca em &lt; 24h</p>
-          <p class="calc-gate-sub" data-i18n="calc.gateSub">Nossa IA (Llama 3.3) cruza seus números, site e redes pra gerar um diagnóstico personalizado: <strong>3 problemas críticos identificados</strong> e como resolver.</p>
+          <p class="calc-gate-sub" data-i18n-html="calc.gateSub">Nossa IA generativa cruza seus números, site e redes pra gerar um diagnóstico personalizado: <strong>3 problemas críticos identificados</strong> e como resolver.</p>
           <div class="calc-gate-grid">
-            <input type="text" id="calc-nome" name="nome" class="calc-inp" data-i18n-placeholder="calc.namePh" placeholder="Seu nome" autocomplete="name" required>
-            <input type="email" id="calc-email" name="email" class="calc-inp" data-i18n-placeholder="calc.emailPh" placeholder="você@empresa.com" autocomplete="email" required>
+            <input type="text" id="calc-nome" name="nome" class="calc-inp calc-inp-req" data-i18n-placeholder="calc.namePh" placeholder="Seu nome" autocomplete="name" required aria-required="true">
+            <input type="email" id="calc-email" name="email" class="calc-inp calc-inp-req" data-i18n-placeholder="calc.emailPh" placeholder="você@empresa.com" autocomplete="email" required aria-required="true">
             <input type="url" id="calc-site" name="site" class="calc-inp" data-i18n-placeholder="calc.sitePh" placeholder="https://suaempresa.com ou @handle (opcional)" autocomplete="url">
           </div>
           <button type="submit" class="calc-gate-btn" id="calc-submit-btn"><span data-i18n="calc.gateBtn">Gerar meu Audit →</span></button>
@@ -1495,7 +1500,7 @@ const I18N = {
     'calc.perMonth':'/mês estimado','calc.planBasico':'Plano Básico',
     'calc.saveMonth':'Economia mensal','calc.saveYear':'Economia em 12 meses','calc.savePct':'Redução de custo',
     'calc.gateTtl':'Receba o Audit M2W da sua marca em < 24h',
-    'calc.gateSub':'Nossa IA (Llama 3.3) cruza seus números, site e redes pra gerar um diagnóstico personalizado: <strong>3 problemas críticos identificados</strong> e como resolver.',
+    'calc.gateSub':'Nossa IA generativa cruza seus números, site e redes pra gerar um diagnóstico personalizado: <strong>3 problemas críticos identificados</strong> e como resolver.',
     'calc.namePh':'Seu nome','calc.emailPh':'você@empresa.com','calc.sitePh':'https://suaempresa.com ou @handle (opcional)',
     'calc.gateBtn':'Gerar meu Audit →',
     'calc.gateMicro':'Sem spam · sem cobrança · audit chega em < 24h',
@@ -1628,7 +1633,7 @@ const I18N = {
     'calc.perMonth':'/month estimated','calc.planBasico':'Starter Plan',
     'calc.saveMonth':'Monthly savings','calc.saveYear':'12-month savings','calc.savePct':'Cost reduction',
     'calc.gateTtl':'Get your M2W Audit in < 24h',
-    'calc.gateSub':'Our AI (Llama 3.3) cross-references your numbers, site and social handles to generate a personalized diagnosis: <strong>3 critical problems identified</strong> and how to fix them.',
+    'calc.gateSub':'Our generative AI cross-references your numbers, site and social handles to generate a personalized diagnosis: <strong>3 critical problems identified</strong> and how to fix them.',
     'calc.namePh':'Your name','calc.emailPh':'you@company.com','calc.sitePh':'https://yourcompany.com or @handle (optional)',
     'calc.gateBtn':'Get my Audit →',
     'calc.gateMicro':'No spam · no charge · audit arrives in < 24h',
@@ -1761,7 +1766,7 @@ const I18N = {
     'calc.perMonth':'/mes estimado','calc.planBasico':'Plan Básico',
     'calc.saveMonth':'Ahorro mensual','calc.saveYear':'Ahorro en 12 meses','calc.savePct':'Reducción de costo',
     'calc.gateTtl':'Recibe el Audit M2W de tu marca en < 24h',
-    'calc.gateSub':'Nuestra IA (Llama 3.3) cruza tus números, sitio y redes para generar un diagnóstico personalizado: <strong>3 problemas críticos identificados</strong> y cómo resolverlos.',
+    'calc.gateSub':'Nuestra IA generativa cruza tus números, sitio y redes para generar un diagnóstico personalizado: <strong>3 problemas críticos identificados</strong> y cómo resolverlos.',
     'calc.namePh':'Tu nombre','calc.emailPh':'tu@empresa.com','calc.sitePh':'https://tuempresa.com o @handle (opcional)',
     'calc.gateBtn':'Generar mi Audit →',
     'calc.gateMicro':'Sin spam · sin cobro · audit llega en < 24h',
@@ -2034,10 +2039,27 @@ function buildTicker() {
   const inpEmail = $('calc-email');
   const inpSite  = $('calc-site');
 
-  function setErr(msg){
+  /* setErr: ata o erro tanto visualmente quanto via aria-describedby pra SR */
+  function setErr(msg, field){
     errSpan.textContent = msg || '';
-    inpEmail.setAttribute('aria-invalid', msg ? 'true' : 'false');
+    errSpan.setAttribute('role', msg ? 'alert' : 'status');
+    /* clear all aria-invalid + describedby first */
+    [inpNome, inpEmail, inpSite].forEach(inp => {
+      inp.removeAttribute('aria-invalid');
+      inp.removeAttribute('aria-describedby');
+    });
+    if(msg && field){
+      field.setAttribute('aria-invalid', 'true');
+      field.setAttribute('aria-describedby', 'calc-err');
+    }
   }
+
+  /* Clear field-specific error on input (forgiving) */
+  [inpNome, inpEmail, inpSite].forEach(inp => {
+    inp.addEventListener('input', () => {
+      if(inp.getAttribute('aria-invalid') === 'true') setErr('');
+    });
+  });
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
@@ -2045,8 +2067,8 @@ function buildTicker() {
     const nome  = inpNome.value.trim();
     const email = inpEmail.value.trim();
     const site  = inpSite.value.trim();
-    if(!nome || nome.length < 2){ setErr(T('form.errNomeEmpty')); inpNome.focus(); return; }
-    if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ setErr(T('form.errEmailInvalid')); inpEmail.focus(); return; }
+    if(!nome || nome.length < 2){ setErr(T('form.errNomeEmpty'), inpNome); inpNome.focus(); return; }
+    if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ setErr(T('form.errEmailInvalid'), inpEmail); inpEmail.focus(); return; }
 
     const vol = parseInt(document.querySelector('input[name="calc-vol"]:checked')?.value || '30', 10);
     const model = document.querySelector('input[name="calc-model"]:checked')?.value || 'agencia';
@@ -2085,7 +2107,7 @@ function buildTicker() {
     } catch(err) {
       btn.disabled = false;
       btn.querySelector('span').textContent = T('calc.gateBtn');
-      setErr('Não conseguimos enviar agora. Tente novamente ou escreva direto para comercial@m2w-ai.com');
+      setErr('Não conseguimos enviar agora. Tente novamente ou escreva direto para comercial@m2w-ai.com', inpEmail);
     }
   });
 })();
